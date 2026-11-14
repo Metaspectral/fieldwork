@@ -24,7 +24,7 @@ The same packaged runtime should eventually support hosted execution. Initially 
 
 Separate executable, developer-controlled integrations from farmer-editable method documents. Copying a community method creates a private draft; it does not install executable code or grant permissions.
 
-Plugin definitions should describe version, purpose, inputs, outputs, units, required access, limitations, and provenance. Installations pin an approved version and configuration. Runs record the version, inputs, outputs, status, and relevant source timestamps. Long-running imagery jobs need cancellation and resource limits.
+Plugin definitions should describe version, purpose, inputs, outputs, units, required access, limitations, and source attribution. Installations pin an approved version and configuration. Runs record the version, inputs, outputs, status, and relevant source timestamps. Long-running imagery jobs need cancellation and resource limits.
 
 The agent proposes actions through structured tools. Deterministic code performs calculations. Application checks enforce permissions and approvals outside the model. Activation, workflow updates, and publication are distinct decisions; rejection preserves the accepted state.
 
@@ -40,11 +40,11 @@ Optional services are independent:
 
 Community publication constructs a separate summary with a preview and explicit audience. It must not serialize the private workspace. Withdrawal removes the shared summary without deleting the private experiment. Server-side audience enforcement is required before real sharing.
 
-The intended community service is open source and self-hostable. Federation is not an initial requirement. Blockchain is deferred; portable records, version hashes, and signed releases address immediate ownership and provenance needs.
+The intended community service is open source and self-hostable. Federation is not an initial requirement. Blockchain is deferred; portable records, version hashes, and signed releases address immediate ownership and source attribution needs.
 
 ## Decisions still open
 
-- Exact harness commit, frontend extension points, and runtime integration.
+- Frontend extension points and Fieldwork runtime integration; the imported harness revision is pinned by the baseline tag in ../UPSTREAM.md.
 - Database, job persistence, packaging, and supported operating systems.
 - Remote connectivity and device pairing.
 - Model providers and local-model support.

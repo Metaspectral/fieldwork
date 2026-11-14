@@ -10,7 +10,7 @@ Preserve the current supplier, product, rate, area, units, and farmer's reasonin
 
 ## Technical spike
 
-1. Inspect DeepSeek Harness extension points, pin a commit, and record the upstream license and integration approach.
+1. Use the pinned DeepSeek Harness baseline in ../UPSTREAM.md and inspect its extension points. Source import, history preservation, and upstream license retention are complete.
 2. Run its web surface locally and add a restricted Fieldwork seed-cost tool.
 3. Invoke the tool through a real agent using fictional inputs; calculate results in deterministic code.
 4. Persist the baseline and calculation in the local workspace.
@@ -32,7 +32,7 @@ Choose whether to extend the existing harness UI or attach a separate frontend b
 ## Subsequent milestones
 
 - Adapt relevant mockup screens into the working application.
-- Run a versioned Sentinel-2 workflow with acquisition dates, cloud handling, provenance, and saved outputs.
+- Run a versioned Sentinel-2 workflow with acquisition dates, cloud handling, source attribution, and saved outputs.
 - Add remote connectivity with pairing and revocation.
 - Publish a selected experiment summary to the opt-in community service.
 - Package the same runtime for optional hosted execution.

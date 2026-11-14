@@ -1,5 +1,7 @@
 # Fieldwork
 
+English | [中文](README.zh.md)
+
 A farmer-owned workspace for preserving current practices, exploring alternatives, and learning from experiments.
 
 Fieldwork starts with how a farmer already works and why. Plugins can capture that approach, supplement it with weather or imagery, compare costs, or help test a manageable change. Experience, observations, and research retain their sources; the farmer decides what to adopt and share.
@@ -14,8 +16,10 @@ Local execution does not imply a local model: a cloud model receives the context
 
 ## Current status
 
-This repository contains planning material and an interactive HTML mockup. It does not yet contain the harness, a live agent, an execution backend, or a community service.
+This repository includes the DeepSeek Harness source and history, planning material, and an interactive HTML mockup. The upstream agent runtime is the development foundation; Fieldwork tools, its custom interface, experiment storage, and community service are not implemented yet.
 
+- [Team setup](SETUP.md)
+- [Upstream baseline and updates](UPSTREAM.md)
 - [Architecture and decisions](docs/architecture.md)
 - [First milestone](docs/first-milestone.md)
 - [Interactive mockup](prototype/index.html)
@@ -38,4 +42,4 @@ Later milestones add remote access, a reproducible Sentinel-2 workflow, selectiv
 
 ## Source and licensing
 
-The supplied mockup and handoff are preserved unchanged. The handoff predates the local-runtime decision; the architecture document records the current direction. DeepSeek Harness is not vendored or forked here yet. When integrating it, pin a commit and preserve its MIT license and applicable third-party notices. The license for Fieldwork's original code and social services remains a team decision before public release.
+The supplied mockup and handoff are preserved unchanged. The handoff predates the local-runtime decision; the architecture document records the current direction. DeepSeek Harness is imported at the baseline tag recorded in UPSTREAM.md, with its MIT license and third-party notices preserved at the repository root. The license for Fieldwork's original code and social services remains a team decision before public release.

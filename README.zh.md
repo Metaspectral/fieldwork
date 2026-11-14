@@ -1,4 +1,6 @@
-# DeepSeek Harness
+# Fieldwork
+
+Fieldwork 是基于 DeepSeek Harness 的农户自主工作空间。请先阅读 [Fieldwork 概览](fieldwork/README.zh.md)、[团队设置](fieldwork/SETUP.md)和[上游基线](fieldwork/UPSTREAM.md)。仓库已包含框架运行时；Fieldwork 专用工具和界面属于下一个里程碑。
 
 [English](README.md) | 中文
 
