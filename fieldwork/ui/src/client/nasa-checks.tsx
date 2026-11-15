@@ -34,8 +34,13 @@ async function run(body: { fieldId: string } | { demo: true }, key: string): Pro
   finally { update({ running: null }) }
 }
 
-/** Shared request state for the page: status, a running field, the open check, and errors. */
-function useNasaChecks() {
+/** Field id under which the hand-drawn Brookings test outline saves its check. */
+export const NASA_TEST_OUTLINE = 'nasa-test-brookings'
+/**
+ * Shared request state for the page: status, a running field, the open check, and errors.
+ * @returns The shared state with `setOpen` and `run`; `status` is null while loading and `'absent'` when the plugin is not installed.
+ */
+export function useNasaChecks() {
   const s = useSyncExternalStore(l => { listeners.add(l); return () => listeners.delete(l) }, () => shared)
   useEffect(load, [])
   return { ...s, setOpen: (open: NasaCheck | null) => update({ open }), run }
@@ -65,7 +70,7 @@ export function NasaChecksCard({ fields, t }: { fields: FarmState['fields']; t: 
     {s.error && <p role="alert" className={css.error}>{s.error}</p>}
     {s.running && <p role="status" className={css.notice}>{t('nasaRunningLong')}</p>}
     {located.map(f => action(f.id, { fieldId: f.id }, f.name))}
-    {action('nasa-test-brookings', { demo: true }, t('nasaTestOutline'))}
+    {action(NASA_TEST_OUTLINE, { demo: true }, t('nasaTestOutline'))}
     <NasaCheckDialog check={s.open} onClose={() => s.setOpen(null)} t={t} />
   </section>
 }

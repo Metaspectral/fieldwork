@@ -26,9 +26,14 @@ const acresPerHa = 10000 / 4046.8564224
 const blank = (): Column => ({ yield: '', price: '', otherIncome: '', costs: '' })
 const isCrop = (value: string | undefined): value is RotationCropId => rotationCrops.some(c => c.id === value)
 const number = (value: string) => value.trim() === '' || Number.isNaN(Number(value)) ? undefined : Number(value)
-const acres = (field: Field) => field.areaHa === undefined ? undefined : Math.round(field.areaHa * acresPerHa * 10) / 10
 const money = (value: number | undefined, currency: string) => value === undefined ? undefined : new Intl.NumberFormat(undefined, { style: 'currency', currency }).format(value)
 const sideCrops = (side: Side): readonly RotationCropId[] => side.key === 'own' ? side.own : rotationLibrary.rotations.find(r => r.id === side.key)?.crops ?? []
+/**
+ * Field area in acres, the unit the Rotation and My farm tables show.
+ * @param field - Field record; its area is stored in hectares.
+ * @returns Acres rounded to one decimal, or undefined when no area is recorded.
+ */
+export function fieldAcres(field: Field): number | undefined { return field.areaHa === undefined ? undefined : Math.round(field.areaHa * acresPerHa * 10) / 10 }
 /**
  * Localized name of a recorded crop.
  * @param t - Page dictionary lookup.
@@ -172,7 +177,7 @@ export function RotationPage(props: Props): ReactNode {
         <tbody>{fields.map(f => {
           const plan = fieldRotation(data.rotationPlans, f.id), next = plan && plannedCrop(plan, season), side = plan && (plan.choice === 'alternative' && plan.inputs.alternative ? plan.inputs.alternative : plan.inputs.current)
           return <tr key={f.id}>
-            <th scope="row">{f.name}</th><td>{acres(f) ?? '—'}</td>
+            <th scope="row">{f.name}</th><td>{fieldAcres(f) ?? '—'}</td>
             {past.map(y => <td key={y}>{cropLabel(t, f.years[String(y)]?.crop)}</td>)}
             <td>{next ? <strong>{cropLabel(t, next)}</strong> : '—'}</td>
             <td>{side ? <>{rotationLabel(t, side.crops)}<br /><small>{t(sourceKeys[side.source.kind])}</small></> : t('rotationNotSet')}</td>
@@ -209,7 +214,7 @@ export function RotationPage(props: Props): ReactNode {
         </div>
         {picker('current')}
         {picker('alternative')}
-        {result && <><h3>{t('rotationResult')} · {acres(draftField)} {t('acres').toLowerCase()}</h3><Budget t={t} calculation={result} names={[rotationLabel(t, sideCrops(draft.current)), sideCrops(draft.alternative).length ? rotationLabel(t, sideCrops(draft.alternative)) : undefined]} /><p className={css.notice}><small>{t('rotationBudgetLimits')}</small></p></>}
+        {result && <><h3>{t('rotationResult')} · {fieldAcres(draftField)} {t('acres').toLowerCase()}</h3><Budget t={t} calculation={result} names={[rotationLabel(t, sideCrops(draft.current)), sideCrops(draft.alternative).length ? rotationLabel(t, sideCrops(draft.alternative)) : undefined]} /><p className={css.notice}><small>{t('rotationBudgetLimits')}</small></p></>}
         <div className={css.grid}>
           <label className={css.field}>{t('rotationDecision')}<select aria-label={t('rotationDecision')} value={draft.choice} onChange={e => setDraft({ ...draft, choice: e.target.value === 'alternative' ? 'alternative' : 'current', startIndex: start(draftField, sideCrops(e.target.value === 'alternative' ? draft.alternative : draft.current)) })}><option value="current">{t('keepCurrent')}</option><option value="alternative" disabled={!sideCrops(draft.alternative).length}>{t('switchRotation')}</option></select></label>
           <label className={css.field}>{t('startCrop')} {season}<select aria-label={t('startCrop')} value={draft.startIndex} onChange={e => setDraft({ ...draft, startIndex: Number(e.target.value) })}>{chosen.map((c, i) => <option key={i} value={i}>{i + 1} · {t(cropKeys[c])}</option>)}</select></label>

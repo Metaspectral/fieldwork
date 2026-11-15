@@ -1,4 +1,4 @@
-/** Native end-to-end: load the fictional rotation example, accept it, then compare rotations on an own field, load the Brookings example and see it on the farm map. */
+/** Native end-to-end: load the fictional rotation example, accept it, then compare rotations on an own field, load the Brookings example and see it on the farm map, the fields table and field conditions. */
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { fork } from 'node:child_process'
@@ -122,6 +122,26 @@ test('rotation table, compare dialog and plan acceptance complete a native farme
     await page.getByRole('button', { name: 'Cancel', exact: true }).click()
     await map.scrollIntoViewIfNeeded()
     await shot('9-farm-map.png')
+    // My farm follows the working field: every field by default, one row and a highlighted outline when a field is chosen.
+    const fieldsCard = page.getByRole('region', { name: 'Fields', exact: true })
+    assert.equal(await fieldsCard.locator('tbody tr').count(), 8)
+    await fieldsCard.getByRole('row', { name: /West strip/ }).getByText('Winter wheat', { exact: true }).waitFor()
+    await fieldsCard.getByRole('row', { name: /West block/ }).getByText('USDA class: Grass or pasture', { exact: true }).waitFor()
+    assert.equal(await page.getByRole('heading', { name: 'Alder Creek · fictional demo', exact: true }).count(), 0, 'fictional farm notes are hidden beside the Brookings example')
+    const conditions = page.getByRole('region', { name: 'Field conditions', exact: true })
+    // Whether Earthdata is connected depends on the computer running the test; the line is shown either way.
+    await conditions.getByText(/^NASA Earthdata: (connected|not connected)$/).waitFor()
+    await conditions.getByText('Not available yet', { exact: true }).waitFor()
+    await conditions.getByRole('button', { name: 'Check · West strip · Brookings example', exact: true }).waitFor()
+    await page.getByLabel('Working field', { exact: true }).selectOption({ label: 'West strip · Brookings example' })
+    await fieldsCard.getByRole('button', { name: 'Show all fields', exact: true }).waitFor()
+    assert.equal(await fieldsCard.locator('tbody tr').count(), 1)
+    assert.equal(await map.locator('g[data-state="selected"]').count(), 1)
+    await map.getByText('2025 · Soybean · 12.2 acres', { exact: true }).waitFor()
+    await shot('10-my-farm-one-field.png')
+    await fieldsCard.getByRole('button', { name: 'Show all fields', exact: true }).click()
+    await page.waitForFunction(() => !document.querySelector('[role="img"] g[data-state]'))
+    assert.equal(await fieldsCard.locator('tbody tr').count(), 8)
     await page.getByRole('button', { name: 'Open rotation', exact: true }).click()
     await page.getByRole('heading', { level: 1, name: 'Rotation', exact: true }).waitFor()
     assert.deepEqual(errors, [])

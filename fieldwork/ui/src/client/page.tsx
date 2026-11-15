@@ -6,9 +6,7 @@ import type {} from '@deepseek-ai/dsh-client-ui-sidebar/client'
 import type { FarmState } from '../../../plugins/records.ts'
 import type { Face, Reply } from './controller.ts'
 import { FieldSeasonContext } from './context.tsx'
-import { FarmMap } from './farm-map.tsx'
-import { FieldContext } from './fields.tsx'
-import { NasaChecksCard } from './nasa-checks.tsx'
+import { FarmOverview } from './my-farm.tsx'
 import css from './page.module.css'
 /** Props are derived from the native slot and its injected data face. */
 type Props = PropsRuntime<'main'> & PropsLocale<'fieldwork'> & InjectFace<Face>
@@ -47,11 +45,9 @@ export function Page(props: Props): ReactNode {
     {state.error && <p role="alert" className={css.error}>{state.error}</p>}
     {(completed || state.saved) && <p role="status" className={css.notice}>{t('saved')}</p>}
     {props.section === 'farm' && f && <>
-      <FieldContext fields={state.data.fields} t={t} action={<Button onClick={() => props.navigate('corn')}>{t('addField')}</Button>} />
-      <FarmMap fields={state.data.fields} picture={state.picture} busy={state.busy} t={t} getPicture={() => ask({ action: 'farm-picture', payload: {} }, t('getFarmPicture'), [[t('getFarmPicture'), t('farmPictureScope')]])} loadExample={() => ask({ action: 'brookings-example', payload: {} }, t('loadBrookingsExample'), [[t('loadBrookingsExample'), t('brookingsExampleScope')]])} />
-      <NasaChecksCard fields={state.data.fields} t={t} />
-      <section className={css.card}><h2>{f.name}</h2><p>{f.region} · {f.areaHa} ha · {f.crop}</p><h3>{t('baseline')}</h3><p>{f.approach}</p><h3>{t('reason')}</h3><p>{f.reason}</p><Button onClick={() => props.navigate('learning')}>{t('newInvestigation')}</Button></section>
-      <section className={css.card}><h2>{t('rotation')}</h2><p>{t('rotationFarmLine')}</p><Button onClick={() => props.navigate('rotation')}>{t('openRotation')}</Button></section>
+      <FarmOverview fields={state.data.fields} selectedId={state.selection.fieldId ?? null} picture={state.picture} busy={state.busy} t={t} select={fieldId => props.selectContext({ fieldId, investigationId: null })} openRotation={() => props.navigate('rotation')} addField={() => props.navigate('corn')} getPicture={() => ask({ action: 'farm-picture', payload: {} }, t('getFarmPicture'), [[t('getFarmPicture'), t('farmPictureScope')]])} loadExample={() => ask({ action: 'brookings-example', payload: {} }, t('loadBrookingsExample'), [[t('loadBrookingsExample'), t('brookingsExampleScope')]])} />
+      {/* The default farm notes describe a fictional farm; beside the real Brookings example fields they would read as its notes. */}
+      {!state.data.fields.some(x => x.geometry?.example !== undefined) && <section className={css.card}><h2>{f.name}</h2><p>{f.region} · {f.areaHa} ha · {f.crop}</p><h3>{t('baseline')}</h3><p>{f.approach}</p><h3>{t('reason')}</h3><p>{f.reason}</p><Button onClick={() => props.navigate('learning')}>{t('newInvestigation')}</Button></section>}
       <details><summary>{t('editFarmContext')}</summary>
       <form key={f.name + f.region + f.areaHa + f.approach + f.reason + f.crop} className={css.card} onSubmit={e => { const v = values(e); ask({ action: 'farm', farm: { ...v, areaHa: Number(v.areaHa) } }, t('saveFarm'), Object.entries(v).map(([k, v]) => [labels[k] ?? k, v])) }}>
         <h2>{t('baseline')}</h2><div className={css.grid}>{input('name', t('name'), f.name)}{input('region', t('region'), f.region)}{input('areaHa', t('area'), f.areaHa, 'number', { min: .01, max: 100000, step: 'any' })}{input('crop', t('crop'), f.crop)}</div>{text('approach', t('baseline'), f.approach)}{text('reason', t('reason'), f.reason)}<Button type="submit" variant="primary" disabled={state.busy}>{t('saveFarm')}</Button>

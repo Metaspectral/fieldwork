@@ -74,3 +74,7 @@
 .farmMapName { font-weight: 600; }
 .farmMapCrop { font-size: 13px; }
 .farmMapCaption { margin: 10px 0 0; font-size: 13px; color: var(--dsw-alias-label-secondary); }
+.farmMap g[data-state='selected'] .farmMapOutline { fill: rgb(255 214 74 / 16%); stroke: #ffd64a; stroke-width: 4.5; }
+.farmMap g[data-state='selected'] .farmMapPoint { fill: #ffd64a; }
+.farmMap g[data-state='other'] .farmMapOutline { fill: none; stroke-width: 1.8; stroke-dasharray: 8 6; opacity: .8; }
+.farmMap g[data-state='other'] .farmMapPoint, .farmMap g[data-state='other'] text { opacity: .7; }
