@@ -5,8 +5,9 @@
 import type { Context } from '@deepseek-ai/cordis'
 import type {} from '@deepseek-ai/dsh-system-prompt'
 import schema from '@deepseek-ai/schemastery'
+import { z } from 'zod'
 import type { PreToolDecision } from '@deepseek-ai/dsh-tools'
-import { checkEstimate, DEFAULT_RULES, evaluate, forget, note, NOTED_SIGNALS, PACES, promptSection, SIGNAL_KINDS, trackRecord, TrustError, type Pace, type SignalKind, type StageRules } from './trust.ts'
+import { checkEstimate, DEFAULT_RULES, evaluate, forget, note, NOTED_SIGNALS, PACES, promptSection, saveEstimate, SIGNAL_KINDS, trackRecord, TrustError, type Estimate, type Pace, type SignalKind, type StageRules } from './trust.ts'
 import { approve, checked, defineTool, jsonOutput } from './native.ts'
 
 /** Native trust-guide plugin identity. */
@@ -30,6 +31,14 @@ export const DEFAULT_AUTO_SIGNALS: Record<string, SignalKind> = {
   plan_crop_trial: 'trial_saved', record_crop_observation: 'outcome_recorded',
 }
 
+const ranged = z.object({ value: z.number(), low: z.number(), high: z.number() })
+/** The `estimate` field a risk_check result carries. */
+const riskEstimate = z.object({ estimate: z.object({ field: z.string(), change: z.string(), unit: z.string(), example: z.boolean(), normal: ranged, dry: ranged }) })
+/** An estimate the farmer has seen but not saved. */
+type Unsaved = Omit<Estimate, 'id' | 'at' | 'checked'>
+/** Unsaved estimates kept per conversation, newest last. */
+const UNSAVED_LIMIT = 20
+
 /** Validate signal mappings and thresholds at composition time. */
 export const Config: schema<Config> = schema.object({
   autoSignals: schema.dict(schema.union(SIGNAL_KINDS.map(s => schema.const(s)))).default(DEFAULT_AUTO_SIGNALS),
@@ -48,12 +57,22 @@ export function apply(ctx: Context, config: Config): void {
   const trust = ctx.trustRecords
   const status = () => evaluate(trust.snapshot(), config.rules)
   const noted: readonly string[] = NOTED_SIGNALS
+  // Latest risk_check estimates this conversation has shown, so save_estimate stores what the farmer saw, not numbers the model restates.
+  const unsaved: Unsaved[] = []
+  const latest = (field: string) => unsaved.findLast(e => e.field.toLowerCase() === field.trim().toLowerCase())
 
   ctx.systemPrompt.section({ name: 'fieldwork:trust-guide', order: ctx.systemPrompt.getSectionOrder('DEPLOYMENT_PERSONA_SUFFIX') - 1, text: () => promptSection(status()), interpolate: false })
 
   // Awaited before the result reaches the model, so the next prompt already reflects the signal.
   ctx.on('tools/post-execute', async (exec, result, next) => {
     const decision = await next()
+    if (exec.name === 'risk_check' && decision.kind === 'accept' && !result.isError && typeof result.value === 'string') {
+      let value: unknown
+      try { value = JSON.parse(result.value) }
+      catch (error) { void error; value = undefined } // A non-JSON result carries no estimate to keep.
+      const parsed = riskEstimate.safeParse(value)
+      if (parsed.success) { unsaved.push(parsed.data.estimate); if (unsaved.length > UNSAVED_LIMIT) unsaved.shift() }
+    }
     const kind = config.autoSignals[exec.name]
     if (kind !== undefined && decision.kind === 'accept' && !result.isError) {
       try { await trust.change(s => note(s, { kind, detail: exec.name }, new Date())) }
@@ -94,6 +113,25 @@ export function apply(ctx: Context, config: Config): void {
     output: jsonOutput,
     async execute(a) { return checked(async () => evaluate(await trust.change(s => ({ ...s, pace: a.pace as Pace })), config.rules)) },
   }))
+  approve(ctx, ['save_estimate'], args => {
+    const e = latest((args as { field?: string }).field ?? '')
+    return e ? `Save Fieldwork's estimate for "${e.change}" on ${e.field} (normal year ${e.normal.value} ${e.unit}, range ${e.normal.low} to ${e.normal.high}; dry year ${e.dry.value} ${e.unit}, range ${e.dry.low} to ${e.dry.high}${e.example ? '; example numbers' : ''}) on this computer, so you can compare it with what happens after the season.` : JSON.stringify(args)
+  })
+  ctx.tools.register(defineTool({
+    name: 'save_estimate',
+    description: 'Save the latest risk_check estimate for a field on this computer, so the farmer can compare it with what happens after the season (check_estimate). Offer it when the farmer is trialling or tracking that change; do not push it. Requires approval.',
+    parameters: { field: { type: 'string', required: true, description: 'Field name used in the risk_check.' } },
+    output: jsonOutput,
+    async execute(a) {
+      return checked(async () => {
+        const e = latest(a.field)
+        if (!e) throw new TrustError(`No risk check for "${a.field}" in this conversation yet. Run risk_check first.`, 'TRUST_INPUT')
+        let id = ''
+        await trust.change(s => { const saved = saveEstimate(s, e, new Date()); id = saved.id; return saved.state })
+        return { id, field: e.field, change: e.change, unit: e.unit, normal: e.normal, dry: e.dry, example: e.example }
+      })
+    },
+  }))
   approve(ctx, ['check_estimate'], args => {
     const a = args as { id?: string; yearWas?: string; actual?: number }
     const e = trust.snapshot().estimates.find(x => x.id === a.id)
@@ -101,7 +139,7 @@ export function apply(ctx: Context, config: Config): void {
   })
   ctx.tools.register(defineTool({
     name: 'check_estimate',
-    description: 'Compare a saved estimate (from risk_check; ids in trust_status) with what the farmer saw after the season, e.g. the trial strip\'s return minus the rest of the field. Reports whether it landed inside the range. Requires approval.',
+    description: 'Compare a saved estimate (from save_estimate; ids in trust_status) with what the farmer saw after the season, e.g. the trial strip\'s return minus the rest of the field. Reports whether it landed inside the range. Requires approval.',
     parameters: {
       id: { type: 'string', required: true, description: 'Estimate id.' },
       yearWas: { type: 'string', enum: ['normal', 'dry'], required: true, description: 'Whether the season was normal or dry.' },

@@ -30,7 +30,7 @@ The `fieldwork-trust-guide` plugin adds a short "Trust guideline" section to the
 
 ## Track record
 
-`risk_check` saves each result as an estimate. When the farmer reports how a trial or season turned out, `check_estimate` compares the result with the range given for a normal or dry year, through native approval. The track record ("2 of 3 checked estimates landed inside their range") appears in later risk checks and in the agronomist packet, misses included.
+`risk_check` is read-only. When the farmer trials or tracks a change, the agent offers `save_estimate`, which saves the latest risk check for that field through native approval. When the farmer reports how it turned out, `check_estimate` compares the result with the range given for a normal or dry year, also through native approval. The track record ("2 of 3 checked estimates landed inside their range") appears in later risk checks and in the agronomist packet, misses included.
 
 ## Hooking in a plugin
 

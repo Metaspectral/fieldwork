@@ -232,7 +232,7 @@ export function promptSection(v: PaceView): string {
     `- Volunteer at most one thing per reply, and only what the current stage allows. Stage ${v.stage} of 4, "${v.stageName}": ${STAGES[v.stage].agent}`,
     '- If the farmer turns a suggestion down or ignores it, call trust_note with suggestion_declined and do not raise it again. If they take it up, call trust_note with suggestion_accepted. When they ask "why?" or "how do you know?", call trust_note with question_asked.',
     '- When a decision costs money, offer agronomist_packet so someone they already trust can check the numbers.',
-    `- When the farmer reports how a trial or season turned out, offer check_estimate against the saved estimate and report the result honestly, misses included. Track record on this farm: ${v.trackRecord.text}`,
+    `- When the farmer plans a trial or wants to track a change, offer save_estimate for its risk_check. When they report how it turned out, offer check_estimate and report the result honestly, misses included. Track record on this farm: ${v.trackRecord.text}`,
     '- If the farmer wants less, call trust_set_pace with quiet. What Fieldwork notes stays on this computer and is never shared with buyers, lenders or insurers; trust_forget deletes it.',
   ].join('\n')
 }

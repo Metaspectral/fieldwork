@@ -1,19 +1,19 @@
 /**
  * Risk Check: dry-year dollars, blockers and sources for one change on one field, as native
- * tool cards. Each result is saved as an estimate in the trust records so the farmer can
- * later compare it with what happened (check_estimate).
+ * tool cards. Read-only: the result carries an estimate that the farmer can choose to save
+ * (save_estimate, with approval) and later compare with what happened (check_estimate).
  */
 import type { Context } from '@deepseek-ai/cordis'
 import schema from '@deepseek-ai/schemastery'
 import { HarnessError } from '@deepseek-ai/dsh-error'
 import { asEvidence } from './evidence.ts'
 import { EXAMPLE_CROPS, RISK_SOURCES, riskCheck, type RiskModel } from './risk.ts'
-import { saveEstimate, trackRecord } from './trust.ts'
+import { trackRecord } from './trust.ts'
 import { checked, defineTool } from './native.ts'
 
 /** Native risk-check plugin identity. */
 export const name = 'fieldwork-risk-check'
-/** Native tools; estimates are saved in the Host-owned trust records. */
+/** Native tools; reads the track record from the Host-owned trust records. */
 export const inject = ['tools', 'trustRecords']
 /** Crop table and tunables; the default table is example data. */
 export type Config = RiskModel
@@ -26,7 +26,7 @@ export const Config: schema<Config> = schema.object({
 })
 
 const fmt = (n: number | undefined) => n === undefined ? '?' : n.toLocaleString('en-US')
-/** Farmer- and model-facing text: summary, figures with ranges and sources, blockers, limits, the saved estimate and the track record. */
+/** Farmer- and model-facing text: summary, figures with ranges and sources, blockers, limits, and the track record. */
 const riskOutput = {
   schema: { type: 'string' as const },
   render: (_args: unknown, value: string) => {
@@ -39,7 +39,6 @@ const riskOutput = {
       ...(blockers.length ? ['Blockers to solve first:', ...blockers.map(b => `- ${b}`)] : []),
       ...(r.limits?.length ? ['Limits:', ...r.limits.map(l => `- ${l}`)] : []),
       `Sources: ${r.sources.map(s => s.id).join(', ')} (show_source gives details).`,
-      ...(typeof r.estimateId === 'string' ? [`Saved as estimate ${r.estimateId}, to compare with what happens after the season.`] : []),
       ...(typeof r.trackRecord === 'string' ? [`Track record on this farm: ${r.trackRecord}`] : []),
     ].join('\n')
     return [{ type: 'text' as const, text }]
@@ -51,7 +50,7 @@ const textOutput = { schema: { type: 'string' as const }, render: (_args: unknow
 export function apply(ctx: Context, config: Config): void {
   ctx.tools.register(defineTool({
     name: 'risk_check',
-    description: `What one change on one field could cost: normal-year and dry-year change in USD/acre, an average year using how often this field had dry years, the worst single year in USD, blockers to solve first, and sources. Run field_risks first and pass its drought-and-heat count as dryYears/ofYears. Saves the result as an estimate to check after the season; changes no farm records. Does not predict yield or recommend a crop. Known crops: ${Object.keys(config.crops).join(', ')}.${config.cropsAreExamples ? ' The crop table is EXAMPLE data.' : ''}`,
+    description: `What one change on one field could cost: normal-year and dry-year change in USD/acre, an average year using how often this field had dry years, the worst single year in USD, blockers to solve first, and sources. Run field_risks first and pass its drought-and-heat count as dryYears/ofYears. Read-only; save_estimate keeps the result to check after the season. Does not predict yield or recommend a crop. Known crops: ${Object.keys(config.crops).join(', ')}.${config.cropsAreExamples ? ' The crop table is EXAMPLE data.' : ''}`,
     parameters: {
       field: { type: 'string', required: true, description: 'Field name the farmer uses.' },
       acres: { type: 'number', required: true, description: 'Field area in acres, greater than zero.' },
@@ -62,12 +61,7 @@ export function apply(ctx: Context, config: Config): void {
     },
     output: riskOutput,
     async execute(a) {
-      return checked(async () => {
-        const result = riskCheck(a, config)
-        let estimateId = ''
-        const state = await ctx.trustRecords.change(s => { const saved = saveEstimate(s, result.estimate, new Date()); estimateId = saved.id; return saved.state })
-        return { ...result, estimateId, trackRecord: trackRecord(state.estimates).text }
-      })
+      return checked(() => ({ ...riskCheck(a, config), trackRecord: trackRecord(ctx.trustRecords.snapshot().estimates).text }))
     },
   }))
   ctx.tools.register(defineTool({

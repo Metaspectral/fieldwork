@@ -14,7 +14,7 @@ export function apply(ctx) {
     let allow = true
     const asked = []
     const release = ctx.on('approval/request', (request, next) => {
-      if (!['plan_crop_trial', 'trust_set_pace', 'trust_forget', 'agronomist_packet', 'check_estimate'].includes(request.toolName)) return next()
+      if (!['plan_crop_trial', 'trust_set_pace', 'trust_forget', 'agronomist_packet', 'save_estimate', 'check_estimate'].includes(request.toolName)) return next()
       asked.push(request.toolName)
       return Promise.resolve(allow ? 'allowed-once' : 'rejected')
     }, { prepend: true })
@@ -39,7 +39,9 @@ export function apply(ctx) {
       stages.afterRisk = await stage()
       value(await call('trust_note', { kind: 'suggestion_declined', detail: 'not this year' }))
       stages.afterDecline = await stage()
-      const estimateId = value(risk).estimateId
+      const riskStateBefore = ctx.trustRecords.snapshot().estimates.length
+      const saved = value(await call('save_estimate', { field: 'north pivot' }))
+      const estimateId = saved.id
       const checkedEstimate = value(await call('check_estimate', { id: estimateId, yearWas: 'dry', actual: 40, detail: 'Strip beat the corn in a dry August' }))
       const packet = value(await call('agronomist_packet', { fields: ['north pivot'] }))
       const packetText = await readFile(packet.path, 'utf8')
@@ -49,7 +51,7 @@ export function apply(ctx) {
       const refusedAuto = await call('trust_set_pace', { pace: 'auto' })
       allow = true
       const forgotten = value(await call('trust_forget', { what: 'signals' }))
-      return { names, stages, trial, riskText: text(risk), checkedEstimate, packetText, refusedAuto, forgotten, final: ctx.trustRecords.snapshot(), asked }
+      return { names, stages, trial, riskText: text(risk), riskStateBefore, saved, checkedEstimate, packetText, refusedAuto, forgotten, final: ctx.trustRecords.snapshot(), asked }
     } finally {
       release()
       handle.agent.session.append('turn/end', { turn: 1, reason: { kind: 'completed' } })

@@ -22,15 +22,18 @@ test('the trust guideline never blocks a request and volunteers more only as the
       server.on('message', message => { clearTimeout(timeout); if (message.error) reject(new Error(message.error + '\n' + output.replace(/https?:\/\/[^\s]+/g, '[URL omitted]'))); else resolve(message.result) })
       server.once('exit', () => { clearTimeout(timeout); reject(new Error('Trust composition exited before assertions')) })
     })
-    for (const name of ['risk_check', 'show_source', 'agronomist_packet', 'trust_status', 'trust_note', 'trust_set_pace', 'check_estimate', 'trust_forget', 'field_risks', 'plan_crop_trial']) assert.ok(r.names.includes(name), name)
+    for (const name of ['risk_check', 'show_source', 'agronomist_packet', 'trust_status', 'trust_note', 'trust_set_pace', 'save_estimate', 'check_estimate', 'trust_forget', 'field_risks', 'plan_crop_trial']) assert.ok(r.names.includes(name), name)
     // A farmer's request is never blocked: the trial goes through its own approval at the first stage.
     assert.equal(r.trial.isError, false)
     // Stages follow engagement: history, then questions plus a cost check, and a turned-down suggestion steps back.
     assert.deepEqual(r.stages, { start: 1, afterHistory: 2, afterRisk: 3, afterDecline: 2, quiet: 1 })
-    // The risk check uses the field's dry years, labels example numbers, and saves an estimate.
+    // The risk check is read-only: it uses the field's dry years and labels example numbers, but saves nothing.
     assert.match(r.riskText, /Dry years came 3 of the last 5/)
-    assert.match(r.riskText, /Saved as estimate est-/)
     assert.match(r.riskText, /examples, not data/)
+    assert.equal(r.riskStateBefore, 0)
+    // Saving the estimate takes approval and stores what risk_check showed, not numbers the model restates.
+    assert.equal(r.saved.field, 'North pivot')
+    assert.equal(r.saved.dry.value, 35)
     // Checking the estimate after the season builds the track record the packet reports.
     assert.equal(r.checkedEstimate.landedInRange, true)
     assert.match(r.checkedEstimate.trackRecord, /1 of 1/)
@@ -42,7 +45,7 @@ test('the trust guideline never blocks a request and volunteers more only as the
     // Forgetting signals keeps the estimates.
     assert.equal(r.final.signals.length, 0)
     assert.equal(r.final.estimates.length, 1)
-    assert.deepEqual(r.asked, ['plan_crop_trial', 'check_estimate', 'agronomist_packet', 'trust_set_pace', 'trust_forget'])
+    assert.deepEqual(r.asked, ['plan_crop_trial', 'save_estimate', 'check_estimate', 'agronomist_packet', 'trust_set_pace', 'trust_forget'])
   } finally {
     server.kill('SIGTERM')
     const kill = setTimeout(() => server.kill('SIGKILL'), 5000)
