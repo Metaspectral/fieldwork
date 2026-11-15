@@ -36,6 +36,7 @@ const area = (ring: Ring) => { // shoelace on a local flat projection, hectares
 }
 const center = (ring: Ring) => ({ longitude: ring.slice(0, -1).reduce((s, p) => s + p[0], 0) / (ring.length - 1), latitude: ring.slice(0, -1).reduce((s, p) => s + p[1], 0) / (ring.length - 1) })
 const polygonSchema = z.object({ type: z.literal('Polygon'), coordinates: z.tuple([z.array(z.tuple([z.number().min(-180).max(180), z.number().min(-90).max(90)])).min(4).max(1000)]).rest(z.array(z.tuple([z.number(), z.number()]))) })
+const pointSchema = z.object({ type: z.literal('Point'), coordinates: z.tuple([z.number().min(-180).max(180), z.number().min(-90).max(90)]) })
 const circleSchema = z.object({ shape: z.object({ type: z.literal('circle'), center: z.object({ latitude: z.number(), longitude: z.number() }), radiusFeet: z.number().positive() }) })
 
 /** Runs and saves checks; one at a time per field. */
@@ -67,21 +68,24 @@ export class NasaChecks {
     this.running.set(key, job)
     return job
   }
-  private field(request: { fieldId?: string | undefined; demo?: boolean | undefined }): { id: string; name: string; ring: Ring; demo: boolean; outline: NasaCheck['outline'] } {
-    if (request.demo) return { ...TEST_FIELD, ring: TEST_OUTLINE, demo: true, outline: 'test' }
+  private field(request: { fieldId?: string | undefined; demo?: boolean | undefined }): { id: string; name: string; ring: Ring | null; point: { latitude: number; longitude: number } | null; demo: boolean; outline: NasaCheck['outline'] } {
+    if (request.demo) return { ...TEST_FIELD, ring: TEST_OUTLINE, point: null, demo: true, outline: 'test' }
     const field = this.ctx.farmRecords.snapshot().fields.find(f => f.id === request.fieldId)
     if (!field) throw new NasaCheckError('Choose a field on My farm.')
     const demo = field.evidence === 'demo'
     // The field's own boundary when it has one; otherwise the circle onboarding stores; otherwise, for a fictional field only, the test outline.
     const polygon = polygonSchema.safeParse(field.geometry)
-    if (polygon.success) return { id: field.id, name: field.name, ring: polygon.data.coordinates[0] as Ring, demo, outline: 'boundary' }
+    if (polygon.success) return { id: field.id, name: field.name, ring: polygon.data.coordinates[0] as Ring, point: null, demo, outline: 'boundary' }
     const circle = circleSchema.safeParse(field.geometry)
-    if (circle.success) return { id: field.id, name: field.name, ring: circleRing(circle.data.shape.center, circle.data.shape.radiusFeet * 0.3048) as Ring, demo, outline: 'circle' }
-    if (demo) return { id: field.id, name: `${field.name} · ${TEST_FIELD.name}`, ring: TEST_OUTLINE, demo, outline: 'test' }
+    if (circle.success) return { id: field.id, name: field.name, ring: circleRing(circle.data.shape.center, circle.data.shape.radiusFeet * 0.3048) as Ring, point: null, demo, outline: 'circle' }
+    // A point (a site, not a field) gets the weather checks only: field images need an outline.
+    const point = pointSchema.safeParse(field.geometry)
+    if (point.success) return { id: field.id, name: field.name, ring: null, point: { longitude: point.data.coordinates[0], latitude: point.data.coordinates[1] }, demo, outline: 'point' }
+    if (demo) return { id: field.id, name: `${field.name} · ${TEST_FIELD.name}`, ring: TEST_OUTLINE, point: null, demo, outline: 'test' }
     throw new NasaCheckError('This field has no outline yet. Find it in Farm setup first.')
   }
   private async compute(request: { fieldId?: string | undefined; demo?: boolean | undefined }, signal?: AbortSignal): Promise<NasaCheck> {
-    const field = this.field(request), { latitude, longitude } = center(field.ring), areaHa = area(field.ring)
+    const field = this.field(request), { latitude, longitude } = field.ring ? center(field.ring) : field.point!, areaHa = field.ring ? area(field.ring) : 0
     const lastYear = new Date().getUTCFullYear() - 1, fieldFirst = SETTINGS.greenness.firstYear
     const sources = createSources(fetch, { tokenFile: this.config.earthdataTokenFile })
     const weather = await sources.weather({ latitude, longitude, firstYear: this.config.firstWeatherYear, lastYear }, signal)
@@ -104,7 +108,8 @@ export class NasaChecks {
     })
     const token = earthdataToken(this.config.earthdataTokenFile)
     let green: Awaited<ReturnType<typeof seasonGreenness>> | null = null, note: string | null = null
-    if (token) {
+    if (!field.ring) note = 'A site location, not a field outline: weather checks only.'
+    else if (token) {
       try { green = await seasonGreenness({ ring: field.ring, years: fieldYears, token, settings: SETTINGS.greenness, ...(signal ? { signal } : {}) }) }
       catch (error) { if (signal?.aborted) throw error; note = error instanceof Error ? error.message : 'Field images could not be read.' }
     } else note = 'Connect NASA Earthdata to add field greenness.'
