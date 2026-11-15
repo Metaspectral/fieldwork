@@ -22,6 +22,8 @@ test('native farm, community, and experiment panels share private records', {tim
   assert.equal((await page.request.get(launch).catch(()=>{throw new Error('Authenticated entry failed')})).status(),200)
   await page.goto(origin)
   await page.getByRole('button',{name:'Continue',exact:true}).click()
+  await page.getByRole('button',{name:'Do this later',exact:true}).click()
+  await page.getByRole('heading',{name:'My farm',exact:true}).waitFor()
   await page.getByRole('button',{name:'My farm',exact:true}).click()
   await page.getByLabel('Farm name',{exact:true}).waitFor()
   assert.equal(await page.title(),'Fieldwork')

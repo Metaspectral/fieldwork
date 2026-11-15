@@ -31,10 +31,10 @@ Jonathan Trueblood 的 [onboarding-field-history](https://github.com/Metaspectra
 - 真实模型预览验证了技能发现及四个只读工具。未通过模型测试更正及笔记写入，也未测试完整的交互式入门流程。
 - 六个工具为 `find_field`、`field_history`、`year_detail`、`field_risks`、`correct_year` 和 `save_field_note`。
 - Jon 的[交接文档](https://github.com/Metaspectral/fieldwork/blob/onboarding-field-history/fieldwork/onboarding/HANDOFF.md)记录了近似田地边界、未经验证的作物假设、缺失的数据集成及其他限制。这些风险等级并非经过验证的农艺建议。
-- 田地历史目前使用独立于 My farm 的存储。集成写入前，应将更正及笔记审批与 Fieldwork 原生审批策略对齐。
+- 田地历史目前使用独立于 My farm 的存储。更正及笔记工具现已要求原生审批。当前内置流程见[入门指南](../../onboarding/README.zh.md)。
 
 若要从 main 尝试，请安装依赖，运行 `pnpm run fieldwork:build`，然后运行：
 
 ```sh
-DSH_HOME="$PWD/.fieldwork/jon-preview" FIELDWORK_PRETEND=1 pnpm run fieldwork:start --patch fieldwork/onboarding/dev.patch.yml --no-open
+DSH_HOME="$PWD/.fieldwork/jon-preview" FIELDWORK_PRETEND=1 pnpm run fieldwork:start --no-open
 ```

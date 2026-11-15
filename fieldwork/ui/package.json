@@ -5,9 +5,31 @@
   "type": "module",
   "description": "Native Harness farm, community, and experiment pages.",
   "main": "src/index.ts",
-  "exports": { ".": "./src/index.ts", "./client": "./lib/client.js", "./package.json": "./package.json" },
-  "dsh": { "client": { "platform": "web", "immediately": true, "inject": ["@deepseek-ai/dsh-client-ui-layout", "@deepseek-ai/dsh-client-ui-sidebar", "@deepseek-ai/dsh-client-ui-renderer", "@deepseek-ai/dsh-client-locale"] } },
-  "scripts": { "build": "tsdown --config-loader native", "typecheck": "tsc -p tsconfig.json" },
+  "exports": {
+    ".": "./src/index.ts",
+    "./client": "./lib/client.js",
+    "./package.json": "./package.json"
+  },
+  "dsh": {
+    "client": {
+      "platform": "web",
+      "immediately": true,
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-layout",
+        "@deepseek-ai/dsh-client-ui-sidebar",
+        "@deepseek-ai/dsh-client-ui-renderer",
+        "@deepseek-ai/dsh-client-locale",
+        "@deepseek-ai/dsh-api-session-controller",
+        "@deepseek-ai/dsh-client-ui-workspace",
+        "@deepseek-ai/dsh-client-ui-conversation",
+        "@deepseek-ai/dsh-client-ui-model-selection"
+      ]
+    }
+  },
+  "scripts": {
+    "build": "tsdown --config-loader native",
+    "typecheck": "tsc -p tsconfig.json && tsc -p tsconfig.host.json"
+  },
   "dependencies": {
     "@fieldwork/plugins": "workspace:*",
     "@deepseek-ai/cordis": "workspace:~",
@@ -20,7 +42,14 @@
     "@deepseek-ai/dsh-client-ui-slots": "workspace:*",
     "@deepseek-ai/dsh-client-ui-primitives": "workspace:*",
     "react": "^18.2.0",
-    "zod": "4.6.6"
+    "zod": "4.6.6",
+    "@deepseek-ai/dsh-api-session-controller": "workspace:*",
+    "@deepseek-ai/dsh-client-ui-workspace": "workspace:*",
+    "@deepseek-ai/dsh-client-ui-conversation": "workspace:*",
+    "@deepseek-ai/dsh-client-ui-model-selection": "workspace:*",
+    "@deepseek-ai/dsh-session": "workspace:*"
   },
-  "devDependencies": { "@types/react": "~18.3.1" }
+  "devDependencies": {
+    "@types/react": "~18.3.1"
+  }
 }

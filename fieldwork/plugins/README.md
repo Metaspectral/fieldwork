@@ -13,7 +13,7 @@ pnpm run fieldwork:build
 pnpm run fieldwork:start --no-open
 ```
 
-Open the authenticated URL printed by the server. Select the **Fieldwork** agent preset in the native new-session selector. For subscription testing, sign into the local Codex CLI with ChatGPT and select **GPT-6.1 Sol · Codex subscription** in the native model picker. Other providers remain configurable through Harness settings. The preset mounts separate Cordis components. Capability enable/disable is configured in the source composition for this POC; there is no custom toggle UI. Keyless tests use the actual Loader and native executor. An opt-in real-model test also exercises the [Codex subscription bridge](../codex/README.md).
+Open the authenticated URL printed by the server. The **Fieldwork** preset is the default for new conversations. First launch opens the built-in [farm setup](../onboarding/README.md), which waits for a connected model before starting. For subscription testing, sign into the local Codex CLI with ChatGPT and select **GPT-6.1 Sol · Codex subscription** in the native model picker. Other providers remain configurable through Harness settings. The preset mounts separate Cordis components. Capability enable/disable is configured in the source composition for this POC; there is no custom toggle UI. Keyless tests use the actual Loader and native executor. An opt-in real-model test also exercises the [Codex subscription bridge](../codex/README.md).
 
 ## Try a conversation
 

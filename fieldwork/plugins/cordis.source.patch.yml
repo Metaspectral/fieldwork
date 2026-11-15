@@ -6,6 +6,15 @@
         file: !!js process.getBuiltinModule('node:path').join(process.env.DSH_HOME || process.getBuiltinModule('node:path').join(process.getBuiltinModule('node:os').homedir(), '.dsh'), 'fieldwork-native', 'records.v1.json')
     - id: fieldwork-preset
       name: './preset.ts'
+    - id: fieldwork-onboarding
+      name: '../onboarding/index.js'
+      config:
+        pretend: true
+    - id: fieldwork-onboarding-progress
+      name: './onboarding-progress.ts'
+      config:
+        file: !!js process.getBuiltinModule('node:path').join(process.env.DSH_HOME || process.getBuiltinModule('node:path').join(process.getBuiltinModule('node:os').homedir(), '.dsh'), 'fieldwork-native', 'onboarding.v1.json')
+        workspace: !!js process.getBuiltinModule('node:path').join(process.env.DSH_HOME || process.getBuiltinModule('node:path').join(process.getBuiltinModule('node:os').homedir(), '.dsh'), 'fieldwork-workspace')
     - id: fieldwork-pages
       name: '../ui/src/index.ts'
     - id: fieldwork-codex-subscription
@@ -14,3 +23,8 @@
 # Fieldwork owns the native brand slots; omit the upstream decorative home layer.
 - id: ui-brand-official
   disabled: true
+
+# New conversations use the farmer preset, including native question and skill tools.
+- id: agent-preset-registry
+  config:
+    default: fieldwork

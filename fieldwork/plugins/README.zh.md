@@ -13,7 +13,7 @@ pnpm run fieldwork:build
 pnpm run fieldwork:start --no-open
 ```
 
-打开服务器打印的认证链接。在原生新会话选择器中选择 **Fieldwork** 智能体预设，如需订阅测试，在本地 Codex CLI 中使用 ChatGPT 登录，然后在原生模型选择器中选择 **GPT-6.1 Sol · Codex subscription**。其他提供商仍可通过 Harness 设置配置。预设挂载独立的 Cordis 组件。本概念验证通过源码组合配置能力的启用和禁用，没有定制开关界面。无密钥测试使用真实 Loader 和原生执行器。可选的真实模型测试也验证 [Codex 订阅桥接](../codex/README.zh.md)。
+打开服务器打印的认证链接。**Fieldwork** 是新会话的默认预设。首次启动会打开内置[农场设置](../onboarding/README.zh.md)，在选择已连接的模型后开始。如需订阅测试，在本地 Codex CLI 中使用 ChatGPT 登录，然后在原生模型选择器中选择 **GPT-6.1 Sol · Codex subscription**。其他提供商仍可通过 Harness 设置配置。预设挂载独立的 Cordis 组件。本概念验证通过源码组合配置能力的启用和禁用，没有定制开关界面。无密钥测试使用真实 Loader 和原生执行器。可选的真实模型测试也验证 [Codex 订阅桥接](../codex/README.zh.md)。
 
 ## 尝试对话
 

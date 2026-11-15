@@ -4,14 +4,32 @@ import type { Context } from '@deepseek-ai/cordis'
 import type {} from '@deepseek-ai/dsh-host-webserver'
 import type {} from '../../plugins/records.ts'
 import { FarmError } from '../../plugins/records.ts'
-import { ZodError } from 'zod'
+import { z, ZodError } from 'zod'
+import type {} from '../../plugins/onboarding-progress.ts'
 import { perform } from './commands.ts'
 /** Native UI transport plugin identity. */
 export const name = 'fieldwork-pages'
 /** Reuse the Harness transport and the same Host record owner as agent tools. */
-export const inject = ['webServer', 'farmRecords']
+export const inject = ['webServer', 'farmRecords', 'farmOnboarding']
 /** Mount owner-only data routes; the browser pages are registered through native slots. */
 export function apply(ctx: Context): void {
+  ctx.effect(() => ctx.webServer.register({ kind: 'exact', path: '/fieldwork-onboarding', auth: 'required', async handler(req, res, peer) {
+    res.setHeader('Cache-Control', 'no-store'); res.setHeader('Content-Type', 'application/json')
+    if (peer?.principal.kind !== 'owner') { res.writeHead(403).end(); return }
+    try {
+      if (req.method === 'GET') { res.end(JSON.stringify(ctx.farmOnboarding.snapshot())); return }
+      if (req.method !== 'POST') { res.writeHead(405).end(); return }
+      if (!req.headers.origin || new URL(req.headers.origin).host !== req.headers.host || !req.headers['content-type']?.startsWith('application/json')) { res.writeHead(403).end(); return }
+      let text = ''
+      for await (const chunk of req) { text += chunk.toString(); if (Buffer.byteLength(text) > 2048) { res.writeHead(413).end(); return } }
+      const command = z.object({ action: z.enum(['prepare', 'begin', 'defer', 'complete', 'resume']) }).parse(JSON.parse(text))
+      res.end(JSON.stringify(await ctx.farmOnboarding.perform(command.action)))
+    } catch (error) {
+      const input = error instanceof ZodError || error instanceof SyntaxError
+      if (!input) ctx.logger.warn('Could not update Fieldwork setup', error)
+      res.writeHead(input ? 400 : 500).end(JSON.stringify({ error: input ? 'Check the setup action.' : 'Could not update farm setup. Your progress has been kept.' }))
+    }
+  } }))
   const streams = new Map<ServerResponse, () => void>()
   ctx.effect(() => () => { for (const [response, stop] of streams) { stop(); response.end() }; streams.clear() })
   ctx.effect(() => ctx.webServer.register({ kind: 'exact', path: '/fieldwork-data', auth: 'required', async handler(req, res, peer) {

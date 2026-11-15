@@ -31,10 +31,10 @@ A follow-up calls `year_detail` for 2022. The response labels the values as inve
 - The real-model preview exercised skill discovery and the four read tools. Correction and note writes were not exercised through a model, and the full interactive onboarding sequence was not tested.
 - The six tools are `find_field`, `field_history`, `year_detail`, `field_risks`, `correct_year`, and `save_field_note`.
 - Jon’s [handoff](https://github.com/Metaspectral/fieldwork/blob/onboarding-field-history/fieldwork/onboarding/HANDOFF.md) documents approximate field boundaries, unvalidated crop assumptions, missing data integrations, and other limits. The risk levels are not validated agronomic advice.
-- Field history currently has a separate store from My farm. Before integrating writes, align correction/note approval with Fieldwork’s native approval policy.
+- Field history currently has a separate store from My farm. Correction and note tools now require native approval. The current built-in flow is documented in the [onboarding guide](../../onboarding/README.md).
 
 To try it from main, install dependencies, run `pnpm run fieldwork:build`, then:
 
 ```sh
-DSH_HOME="$PWD/.fieldwork/jon-preview" FIELDWORK_PRETEND=1 pnpm run fieldwork:start --patch fieldwork/onboarding/dev.patch.yml --no-open
+DSH_HOME="$PWD/.fieldwork/jon-preview" FIELDWORK_PRETEND=1 pnpm run fieldwork:start --no-open
 ```

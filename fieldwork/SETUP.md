@@ -15,6 +15,8 @@ pnpm run fieldwork:start --no-open
 
 The build prepares upstream packages and the native Fieldwork UI bundle. Open the authenticated URL printed by the server; keep its credential private. The launcher uses `.fieldwork/native` for local state unless `DSH_HOME` is already set. Runtime data is ignored by Git.
 
+On first launch, **Farm setup** opens a saved Fieldwork conversation. Choose a connected model in the native picker; onboarding begins automatically. A deployment with a preconfigured model starts directly. Use the conversation’s **Setup** menu to pause or finish, and **Farm setup** in the sidebar to resume. Field-history lookup uses invented demo data; describing your own farm is a separate choice.
+
 Click **My farm**, **Community**, or **Experiments** in the Harness sidebar. These are native plugin panels. Use **Fieldwork** in the new-session preset selector to chat with the farm tools. The Fieldwork preset includes no shell or arbitrary filesystem tools. Read-only page use needs no model account.
 
 ## Subscription model testing
@@ -28,3 +30,5 @@ The [Codex bridge guide](codex/README.md) explains the opt-in test, limits, and 
 Records live in `$DSH_HOME/fieldwork-native/records.v1.json`. Missing records start a fictional demonstration farm. See the [plugin guide](plugins/README.md) for approval, sharing, and data boundaries.
 
 The server listens locally. Phone pairing and hosted cloud execution are not implemented. Same-network access requires explicit listener and HTTPS/proxy configuration using the upstream remote-access guide. Community is currently a local demonstration feed.
+
+See the [built-in onboarding guide](onboarding/README.md) for setup progress, approval, and developer configuration. Hosted model provisioning is supported through native model configuration; this repository does not implement a cloud hosting service.

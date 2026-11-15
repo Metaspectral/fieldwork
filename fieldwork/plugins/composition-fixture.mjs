@@ -13,7 +13,7 @@ export function apply(ctx) {
     let allow = false
     const approvalDetails = []
     const release = ctx.on('approval/request', (request, next) => {
-      if (!['update_my_farm', 'plan_crop_trial', 'adapt_community_method', 'start_crop_tracking', 'record_crop_observation', 'publish_farm_summary', 'withdraw_farm_summary'].includes(request.toolName)) return next()
+      if (!['update_my_farm', 'plan_crop_trial', 'adapt_community_method', 'start_crop_tracking', 'record_crop_observation', 'publish_farm_summary', 'withdraw_farm_summary', 'correct_year', 'save_field_note'].includes(request.toolName)) return next()
       approvalDetails.push(request)
       return Promise.resolve(allow ? 'allowed-once' : 'rejected')
     }, { prepend: true })
@@ -25,7 +25,9 @@ export function apply(ctx) {
       const before = ctx.farmRecords.snapshot()
       const denied = await call('plan_crop_trial', { title: 'Small trial', change: 'Try peas on one strip', trialAreaHa: .5 })
       const afterDenied = ctx.farmRecords.snapshot()
+      const deniedCorrection = await call('correct_year', { fieldId: 'finney-ks-126', year: 2022, crop: 'corn', whatWasWrong: 'Farmer confirms corn.' })
       allow = true
+      const correction = await call('correct_year', { fieldId: 'finney-ks-126', year: 2022, crop: 'corn', whatWasWrong: 'Farmer confirms corn.' })
       const comparison = value(await call('compare_seed_quotes', { areaHa: 12, bagsPerHa: 1.5, currentCadPerBag: 120, alternativeCadPerBag: 108 }))
       const trial = value(await call('adapt_community_method', { postId: 'sample-cover-crop' }))
       value(await call('start_crop_tracking', { id: trial.id }))
@@ -35,7 +37,7 @@ export function apply(ctx) {
       value(await call('withdraw_farm_summary', { id: published.id }))
       const planned = value(await call('plan_crop_trial', { title: 'Try a little', change: 'Locally reviewed alternative', trialAreaHa: .5 }))
       const invalid = await call('plan_crop_trial', { title: 'Too much', change: 'Alternative', trialAreaHa: 20 })
-      return { names, before, denied, afterDenied, comparison, preview, published, planned, invalid, final: ctx.farmRecords.snapshot(), approvalCount: approvalDetails.length }
+      return { names, before, denied, deniedCorrection, correction, afterDenied, comparison, preview, published, planned, invalid, final: ctx.farmRecords.snapshot(), approvalCount: approvalDetails.length }
     } finally {
       release()
       handle.agent.session.append('turn/end', { turn: 1, reason: { kind: 'completed' } })

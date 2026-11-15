@@ -16,7 +16,7 @@ const freshFile = () => join(dir, `run-${count++}`, "onboarding.json")
 async function load(config) {
   const tools = new Map()
   const skills = []
-  await apply({ tools: { register: def => tools.set(def.name, def) }, skills: { register: s => skills.push(s) } }, { file: freshFile(), pretend: true, ...config })
+  await apply({ on: () => () => {}, tools: { register: def => tools.set(def.name, def) }, skills: { register: s => skills.push(s) } }, { file: freshFile(), pretend: true, ...config })
   return { tools, skills }
 }
 

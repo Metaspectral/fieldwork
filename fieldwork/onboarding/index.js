@@ -369,7 +369,16 @@ export async function apply(ctx, config = {}) {
     return { ...history, missing }
   }
 
-  ctx.skills.register({ ...skill, source: 'runtime' })
+  ctx.on('tools/pre-execute', async (exec, next) => {
+    const decision = await next()
+    if (decision.kind !== 'allow' || !['correct_year', 'save_field_note'].includes(exec.name)) return decision
+    return { kind: 'ask', reason: `Save this farmer-confirmed field change: ${JSON.stringify(exec.arguments)}` }
+  })
+
+  const runtimeMode = pretend
+    ? `\n\n## Current runtime\n\nInvented demo mode only. After the farmer chooses the demo, call find_field with ${JSON.stringify({ latitude: FIELD.shape.center.latitude, longitude: FIELD.shape.center.longitude, acres: FIELD.acres, irrigated: FIELD.irrigated })}. These identify the fictional example, never the farmer's actual field. No location lookup is sent to external services in this mode.`
+    : '\n\n## Current runtime\n\nStandalone real-data developer mode. Do not offer a fictional lookup in this mode. Before find_field, explain that coordinates go to the US Census, USDA crop-map host, USDA soil survey, and NASA POWER, and ask for permission and an actual coordinate point. Never guess coordinates from a place name.'
+  ctx.skills.register({ ...skill, content: skill.content + runtimeMode, source: 'runtime' })
 
   ctx.tools.register(defineTool({
     name: 'find_field',

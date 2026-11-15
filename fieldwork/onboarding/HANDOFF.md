@@ -1,6 +1,6 @@
 # Field history and onboarding: handoff
 
-Written 14 November 2026. The implementation from [`onboarding-field-history`](https://github.com/Metaspectral/fieldwork/tree/onboarding-field-history) is merged into `main`. It remains an optional plugin, loaded with `dev.patch.yml`; the default Fieldwork launcher does not enable it automatically. See the [verified model preview and screenshots](../screenshots/jon-onboarding/README.md).
+Written 14 November 2026. The implementation from [`onboarding-field-history`](https://github.com/Metaspectral/fieldwork/tree/onboarding-field-history) is merged into `main`. It is now a built-in modular plugin in the default Fieldwork composition. The [onboarding guide](README.md) describes first-run model setup, progress, and pause/resume; `dev.patch.yml` remains available for standalone development. See the [verified model preview and screenshots](../screenshots/jon-onboarding/README.md).
 
 ## What this is
 
@@ -199,7 +199,7 @@ None of these has a fallback. If one is down, that part is "no reading" and the 
 ### 4. The field and its crops
 
 - **No field edge.** The spec asks for a polygon. The code takes a centre point and acres and assumes a circle. There is no lookup of real field boundaries and no map to tap.
-- **No place search.** `find_field` needs latitude and longitude. Turning "my farm near Holcomb" into a point is left to the model, which will guess.
+- **No place search.** `find_field` needs latitude and longitude. The onboarding skill now prohibits guessing a point from a place name.
 - **Acres and irrigation come from the farmer.** No source is used for either. Until the farmer answers, water and salt are left out.
 - **The field's id is its rounded coordinates** (`index.js` line 394). Two fields whose centres are within about 10 metres collide. There are no accounts and no owner.
 - **Crops are read at 5 points, not across the field** (`settings.js`, `samplePoints`): the centre and four points at 60% of the radius (`sources.js` line 48). The spec asks for the most common crop inside the edge. The crop map's area summary returned nothing when tried, so points were used instead. With 5 points, "under 60% of the field" means 2 of 5 points disagree.
@@ -244,7 +244,7 @@ All thresholds are in `settings.js` and are the spec's starting values. None has
 
 ### 8. The agent and the conversation
 
-- **No agent preset.** The tools are added for every agent, and the standard agent can also run commands and edit files. The handoff asked for a farmer agent with only these tools, the question tool and a plain-spoken persona. Not built.
+- **Built-in Fieldwork preset.** The default Fieldwork launcher creates its setup Session with the Fieldwork preset, native question and skill tools, and the Fieldwork persona. The onboarding tools remain Host-registered and can also be visible to other presets; this is not a separate onboarding-only agent preset.
 - The skill is registered by the plugin when it loads rather than placed in `.dsh/skills/`, because that folder is ignored by git. The harness lists it as a command, but no agent has run it.
 - "Crops first, then problems" depends on the agent calling `field_history` twice, as the skill tells it to. Nothing enforces it.
 - The wording rules (no predictions, no satellites, plain words) are instructions in `SKILL.md`. Nothing checks that the model follows them.
@@ -260,7 +260,7 @@ There is no interface. A farmer sees chat text and the harness's question cards,
 - The plugin announces itself with `console.log`, because the harness's own logger did not show the line.
 - Network time limits are constants in `sources.js` (lines 9 and 11), not in the settings file.
 - No README for the package, and no entry in the Fieldwork README.
-- Not integrated with `fieldwork/start.mjs`, which loads only `fieldwork/plugins`.
+- Integrated with `fieldwork/start.mjs` through the default source composition. Do not add the standalone development overlay to that launcher.
 
 ---
 
@@ -276,7 +276,7 @@ There is no interface. A farmer sees chat text and the harness's question cards,
 
 ## Suggested order
 
-1. Set up a model and run `/farmer-onboarding` once on pretend data. Fix what breaks.
+1. Continue testing the full farmer onboarding conversation; the built-in first question has been verified with Codex, while the complete interactive sequence remains unqualified.
 2. Rebuild after the pull and confirm this loads beside `fieldwork/plugins`.
 3. Add the farmer agent preset.
 4. Have someone who knows crops check `crops.js`.

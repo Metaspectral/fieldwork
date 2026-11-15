@@ -10,6 +10,7 @@
 
 应用就是 Harness 本身，使用其聊天、工具卡片、审批、会话和预设设置。[UI 插件](ui/README.zh.md)在现有聊天和导航旁注册原生 My farm、Community 和 Experiments 主面板。
 
+- **Farm setup：**选择模型后自动开始的内置入门流程，可暂停、继续及明确结束。参见[入门指南](onboarding/README.zh.md)。
 - **My Farm：**读取和更新当前做法及农场背景。
 - **Community：**浏览本地演示知识、私下改编方法，并在分享前预览选定摘要。
 - **Crop Experiments：**创建小规模试验草稿、调整基线、批准跟踪并记录观察。
