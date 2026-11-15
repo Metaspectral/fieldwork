@@ -45,7 +45,7 @@ function useNasaChecks() {
 export function NasaChecksCard({ fields, t }: { fields: FarmState['fields']; t: T }): ReactNode {
   const s = useNasaChecks()
   if (s.status === null || s.status === 'absent') return null
-  const located = fields.filter(f => (f.geometry as { shape?: { type?: string } } | undefined)?.shape?.type === 'circle')
+  const located = fields.filter(f => { const g = f.geometry as { type?: string; shape?: { type?: string } } | undefined; return g?.type === 'Polygon' || g?.shape?.type === 'circle' })
   const saved = (id: string) => s.status !== null && s.status !== 'absent' ? s.status.checks.find(c => c.fieldId === id) : undefined
   const action = (key: string, body: { fieldId: string } | { demo: true }, label: string) => {
     const last = saved(key)
@@ -98,7 +98,7 @@ export function NasaCheckDialog({ check, onClose, t, onRerun }: { check: NasaChe
   const flagText = (y: NasaCheck['years'][number]) => [y.dry && t('nasaDry'), y.hot && t('nasaHot'), y.wetSpring && t('nasaWetSpring')].filter(Boolean).join(', ') || (y.unusual === null ? '—' : t('nasaNormal'))
   return <Modal className={own.modal!} contentClassName={own.modalContent!} open onClose={onClose} closeLabel={t('close')} title={`${t('nasaChecks')} · ${check.fieldName}`}>
     <div className={own.dialog}>
-      <p className={css.notice}>{check.location.latitude}, {check.location.longitude} · {check.location.areaHa} ha · {t('nasaChecked')} {check.checkedAt.slice(0, 10)}{check.demo && <> · <strong>{t('nasaTestLabel')}</strong></>}</p>
+      <p className={css.notice}>{check.location.latitude}, {check.location.longitude} · {check.location.areaHa} ha · {t('nasaChecked')} {check.checkedAt.slice(0, 10)}{check.outline === 'test' ? <> · <strong>{t('nasaTestLabel')}</strong></> : check.demo && <> · <strong>{t('nasaExampleLabel')}</strong></>} · {t(check.outline === 'boundary' ? 'nasaOutlineBoundary' : check.outline === 'circle' ? 'nasaOutlineCircle' : 'nasaOutlineTest')}</p>
       <p className={own.lead}>{t('nasaInforms')}</p>
       <h3>{t('nasaOddsTitle')} ({check.oddsCrop})</h3>
       <table className={own.table}><thead><tr><th scope="col">{t('nasaSeason')}</th><th scope="col">{e.earlier.from}–{e.earlier.to}</th><th scope="col">{e.recent.from}–{e.recent.to}</th><th scope="col">{t('nasaChange')}</th></tr></thead>

@@ -6,6 +6,7 @@ import type {} from '@deepseek-ai/dsh-host-webserver'
 import schema from '@deepseek-ai/schemastery'
 import { z, ZodError } from 'zod'
 import { circleRing, earthdataToken, seasonGreenness, STAC_SEARCH, type Ring } from '../onboarding/hls.js'
+import { CROP_TABLE } from '../onboarding/crops.js'
 import { SETTINGS } from '../onboarding/settings.js'
 import { createSources } from '../onboarding/sources.js'
 import { seasonOdds, weatherRecord } from '../onboarding/weather-record.js'
@@ -34,6 +35,7 @@ const area = (ring: Ring) => { // shoelace on a local flat projection, hectares
   return Math.abs(a) / 2 / 10000
 }
 const center = (ring: Ring) => ({ longitude: ring.slice(0, -1).reduce((s, p) => s + p[0], 0) / (ring.length - 1), latitude: ring.slice(0, -1).reduce((s, p) => s + p[1], 0) / (ring.length - 1) })
+const polygonSchema = z.object({ type: z.literal('Polygon'), coordinates: z.tuple([z.array(z.tuple([z.number().min(-180).max(180), z.number().min(-90).max(90)])).min(4).max(1000)]).rest(z.array(z.tuple([z.number(), z.number()]))) })
 const circleSchema = z.object({ shape: z.object({ type: z.literal('circle'), center: z.object({ latitude: z.number(), longitude: z.number() }), radiusFeet: z.number().positive() }) })
 
 /** Runs and saves checks; one at a time per field. */
@@ -44,7 +46,8 @@ export class NasaChecks {
   constructor(private readonly config: Config, private readonly ctx: Context) {}
   /** Load saved checks; a missing file means none yet. */
   async open(): Promise<void> {
-    try { this.checks = JSON.parse(await readFile(this.config.file, 'utf8')).checks } catch (error) { if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error } // first run: no file
+    // Checks saved before `outline` existed came from the test outline or onboarding's circle.
+    try { this.checks = (JSON.parse(await readFile(this.config.file, 'utf8')).checks as NasaCheck[]).map(c => ({ ...c, outline: c.outline ?? (c.fieldId === TEST_FIELD.id || c.fieldName.endsWith(TEST_FIELD.name) ? 'test' : 'circle') })) } catch (error) { if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error } // first run: no file
   }
   /** True when an Earthdata token is available. The token itself never leaves this process except to NASA. */
   connected(): boolean { return earthdataToken(this.config.earthdataTokenFile) !== null }
@@ -64,16 +67,18 @@ export class NasaChecks {
     this.running.set(key, job)
     return job
   }
-  private field(request: { fieldId?: string | undefined; demo?: boolean | undefined }): { id: string; name: string; ring: Ring; demo: boolean } {
-    if (request.demo) return { ...TEST_FIELD, ring: TEST_OUTLINE, demo: true }
+  private field(request: { fieldId?: string | undefined; demo?: boolean | undefined }): { id: string; name: string; ring: Ring; demo: boolean; outline: NasaCheck['outline'] } {
+    if (request.demo) return { ...TEST_FIELD, ring: TEST_OUTLINE, demo: true, outline: 'test' }
     const field = this.ctx.farmRecords.snapshot().fields.find(f => f.id === request.fieldId)
     if (!field) throw new NasaCheckError('Choose a field on My farm.')
-    const geometry = circleSchema.safeParse(field.geometry)
-    // A fictional demonstration field has no real location; it is checked on the hand-drawn test outline and labelled so.
-    if (!geometry.success && field.evidence === 'demo') return { id: field.id, name: `${field.name} · ${TEST_FIELD.name}`, ring: TEST_OUTLINE, demo: true }
-    if (!geometry.success) throw new NasaCheckError('This field has no location yet. Find it in Farm setup first.')
-    const { center: c, radiusFeet } = geometry.data.shape
-    return { id: field.id, name: field.name, ring: circleRing(c, radiusFeet * 0.3048) as Ring, demo: field.evidence === 'demo' }
+    const demo = field.evidence === 'demo'
+    // The field's own boundary when it has one; otherwise the circle onboarding stores; otherwise, for a fictional field only, the test outline.
+    const polygon = polygonSchema.safeParse(field.geometry)
+    if (polygon.success) return { id: field.id, name: field.name, ring: polygon.data.coordinates[0] as Ring, demo, outline: 'boundary' }
+    const circle = circleSchema.safeParse(field.geometry)
+    if (circle.success) return { id: field.id, name: field.name, ring: circleRing(circle.data.shape.center, circle.data.shape.radiusFeet * 0.3048) as Ring, demo, outline: 'circle' }
+    if (demo) return { id: field.id, name: `${field.name} · ${TEST_FIELD.name}`, ring: TEST_OUTLINE, demo, outline: 'test' }
+    throw new NasaCheckError('This field has no outline yet. Find it in Farm setup first.')
   }
   private async compute(request: { fieldId?: string | undefined; demo?: boolean | undefined }, signal?: AbortSignal): Promise<NasaCheck> {
     const field = this.field(request), { latitude, longitude } = center(field.ring), areaHa = area(field.ring)
@@ -91,8 +96,11 @@ export class NasaChecks {
     const crops: Record<number, string> = {}, cropSource: Record<number, FieldYear['cropSource']> = {}
     fieldYears.forEach((year, i) => {
       const told = field_?.years[String(year)]?.crop
-      crops[year] = told ?? mapped[i]?.crop ?? 'unknown'
-      cropSource[year] = told ? 'farmer' : mapped[i] ? 'crop map' : 'unknown'
+      // Non-crop map classes (roads, buildings, grass, water) say nothing about the field's crop.
+      const map = mapped[i]?.crop
+      const fromMap = map !== undefined && (map in CROP_TABLE || map === 'fallow') ? map : undefined
+      crops[year] = told ?? fromMap ?? 'unknown'
+      cropSource[year] = told ? 'farmer' : fromMap ? 'crop map' : 'unknown'
     })
     const token = earthdataToken(this.config.earthdataTokenFile)
     let green: Awaited<ReturnType<typeof seasonGreenness>> | null = null, note: string | null = null
@@ -100,10 +108,12 @@ export class NasaChecks {
       try { green = await seasonGreenness({ ring: field.ring, years: fieldYears, token, settings: SETTINGS.greenness, ...(signal ? { signal } : {}) }) }
       catch (error) { if (signal?.aborted) throw error; note = error instanceof Error ? error.message : 'Field images could not be read.' }
     } else note = 'Connect NASA Earthdata to add field greenness.'
-    const known = Object.values(crops).filter(c => c !== 'unknown')
+    // Crop ids from the Rotation page map onto the crop table's growing seasons.
+    const seasonOf = (crop: string) => crop === 'winter-wheat' ? 'wheat' : crop
+    const known = Object.values(crops).map(seasonOf).filter(c => c in CROP_TABLE)
     const oddsCrop = known.length ? [...new Set(known)].sort((a, b) => known.filter(c => c === b).length - known.filter(c => c === a).length)[0]! : 'corn'
     const recordFor = new Map<string, ReturnType<typeof weatherRecord>>()
-    const flagsFor = (crop: string) => { if (!recordFor.has(crop)) recordFor.set(crop, weatherRecord(weather, crop, this.config.firstWeatherYear, lastYear)); return recordFor.get(crop)! }
+    const flagsFor = (crop: string) => { const key = seasonOf(crop); if (!recordFor.has(key)) recordFor.set(key, weatherRecord(weather, key, this.config.firstWeatherYear, lastYear)); return recordFor.get(key)! }
     const hits = greennessHits(green?.peaks ?? {}, crops, SETTINGS.droughtHeat.greennessDrop)
     const years: FieldYear[] = fieldYears.map(year => {
       const f = flagsFor(crops[year] === 'unknown' ? oddsCrop : crops[year]!).find(r => r.year === year)!
@@ -112,7 +122,7 @@ export class NasaChecks {
     })
     const seasons = Object.values(green?.seasons ?? {})
     const check: NasaCheck = {
-      fieldId: field.id, fieldName: field.name, demo: field.demo, checkedAt: new Date().toISOString(),
+      fieldId: field.id, fieldName: field.name, demo: field.demo, outline: field.outline, checkedAt: new Date().toISOString(),
       location: { latitude: Math.round(latitude * 1e4) / 1e4, longitude: Math.round(longitude * 1e4) / 1e4, areaHa: Math.round(areaHa * 10) / 10 },
       lastYear, oddsCrop, odds: seasonOdds(flagsFor(oddsCrop), lastYear), years, crops: summariseCrops(years),
       greenness: { connected: token !== null, seasons: seasons.filter(s => s.peak !== null).length, scenesFound: seasons.reduce((a, s) => a + s.found, 0), scenesUsed: seasons.reduce((a, s) => a + s.usable, 0), failures: green?.failures.length ?? 0, note },

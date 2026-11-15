@@ -17,7 +17,10 @@
     "weather-record.js",
     "weather-record.d.ts",
     "hls.js",
-    "hls.d.ts"
+    "hls.d.ts",
+    "crops.d.ts",
+    "settings.d.ts",
+    "sources.d.ts"
   ],
   "engines": {
     "dsh": ">=0.2.0 <0.3.0"

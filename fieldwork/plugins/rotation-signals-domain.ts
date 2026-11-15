@@ -25,6 +25,8 @@ export interface CropSummary { crop: string; unusualSeasons: number[]; withGreen
 /** A saved NASA check for one field. */
 export interface NasaCheck {
   fieldId: string; fieldName: string; demo: boolean; checkedAt: string
+  /** Which outline was read: the field's own boundary, onboarding's circle, or the hand-drawn test outline. */
+  outline: 'boundary' | 'circle' | 'test'
   location: { latitude: number; longitude: number; areaHa: number }
   lastYear: number
   /** Odds for the field's main crop season. */
