@@ -8,6 +8,7 @@ import type { Face } from './controller.ts'
 import { FieldSeasonContext } from './context.tsx'
 import type { FieldworkKey } from './locales.ts'
 import css from './page.module.css'
+import { NasaChecksAction } from './nasa-checks.tsx'
 type Props = PropsRuntime<'main'> & PropsLocale<'fieldwork'> & InjectFace<Face>
 type T = (key: FieldworkKey) => string
 type Field = FarmState['fields'][number]
@@ -175,7 +176,7 @@ export function RotationPage(props: Props): ReactNode {
             {past.map(y => <td key={y}>{cropLabel(t, f.years[String(y)]?.crop)}</td>)}
             <td>{next ? <strong>{cropLabel(t, next)}</strong> : '—'}</td>
             <td>{side ? <>{rotationLabel(t, side.crops)}<br /><small>{t(sourceKeys[side.source.kind])}</small></> : t('rotationNotSet')}</td>
-            <td><div className={css.rowActions}><Button variant="outline" disabled={!f.areaHa} onClick={() => open(f)}>{t('compareRotations')}</Button><Button variant="outline" onClick={() => setCrops({ fieldId: f.id, values: Object.fromEntries(past.map(y => [String(y), f.years[String(y)]?.crop ?? ''])) })}>{t('editCrops')}</Button></div></td>
+            <td><div className={css.rowActions}><Button variant="outline" disabled={!f.areaHa} onClick={() => open(f)}>{t('compareRotations')}</Button><Button variant="outline" onClick={() => setCrops({ fieldId: f.id, values: Object.fromEntries(past.map(y => [String(y), f.years[String(y)]?.crop ?? ''])) })}>{t('editCrops')}</Button><NasaChecksAction fieldId={f.id} t={t} /></div></td>
           </tr>
         })}</tbody>
       </table></div> : <p>{t('rotationEmpty')}</p>}

@@ -14,11 +14,17 @@
       name: './onboarding-shared.mjs'
       config:
         pretend: true
+        earthdataTokenFile: !!js process.env.EARTHDATA_TOKEN_FILE || process.getBuiltinModule('node:path').join(process.getBuiltinModule('node:os').homedir(), '.config', 'earthdata', 'token')
     - id: fieldwork-onboarding-progress
       name: './onboarding-progress.ts'
       config:
         file: !!js process.getBuiltinModule('node:path').join(process.env.DSH_HOME || process.getBuiltinModule('node:path').join(process.getBuiltinModule('node:os').homedir(), '.dsh'), 'fieldwork-native', 'onboarding.v1.json')
         workspace: !!js process.getBuiltinModule('node:path').join(process.env.DSH_HOME || process.getBuiltinModule('node:path').join(process.getBuiltinModule('node:os').homedir(), '.dsh'), 'fieldwork-workspace')
+    - id: fieldwork-rotation-signals
+      name: './rotation-signals.ts'
+      config:
+        file: !!js process.getBuiltinModule('node:path').join(process.env.DSH_HOME || process.getBuiltinModule('node:path').join(process.getBuiltinModule('node:os').homedir(), '.dsh'), 'fieldwork', 'nasa-checks.json')
+        earthdataTokenFile: !!js process.env.EARTHDATA_TOKEN_FILE || process.getBuiltinModule('node:path').join(process.getBuiltinModule('node:os').homedir(), '.config', 'earthdata', 'token')
     - id: fieldwork-pages
       name: '../ui/src/index.ts'
     - id: fieldwork-codex-subscription

@@ -7,6 +7,7 @@ import type { FarmState } from '../../../plugins/records.ts'
 import type { Face, Reply } from './controller.ts'
 import { FieldSeasonContext } from './context.tsx'
 import { FieldContext } from './fields.tsx'
+import { NasaChecksCard } from './nasa-checks.tsx'
 import css from './page.module.css'
 /** Props are derived from the native slot and its injected data face. */
 type Props = PropsRuntime<'main'> & PropsLocale<'fieldwork'> & InjectFace<Face>
@@ -46,6 +47,7 @@ export function Page(props: Props): ReactNode {
     {(completed || state.saved) && <p role="status" className={css.notice}>{t('saved')}</p>}
     {props.section === 'farm' && f && <>
       <FieldContext fields={state.data.fields} t={t} action={<Button onClick={() => props.navigate('corn')}>{t('addField')}</Button>} />
+      <NasaChecksCard fields={state.data.fields} t={t} />
       <section className={css.card}><h2>{f.name}</h2><p>{f.region} · {f.areaHa} ha · {f.crop}</p><h3>{t('baseline')}</h3><p>{f.approach}</p><h3>{t('reason')}</h3><p>{f.reason}</p><Button onClick={() => props.navigate('learning')}>{t('newInvestigation')}</Button></section>
       <section className={css.card}><h2>{t('rotation')}</h2><p>{t('rotationFarmLine')}</p><Button onClick={() => props.navigate('rotation')}>{t('openRotation')}</Button></section>
       <details><summary>{t('editFarmContext')}</summary>

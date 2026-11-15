@@ -1312,6 +1312,13 @@ importers:
         version: 4.6.6
 
   fieldwork/onboarding:
+    dependencies:
+      geotiff:
+        specifier: ^3.0.5
+        version: 3.0.5
+      proj4:
+        specifier: ^2.23.0
+        version: 2.23.0(geotiff@3.0.5)
     devDependencies:
       '@deepseek-ai/dsh-error':
         specifier: workspace:*
@@ -1334,6 +1341,9 @@ importers:
       '@deepseek-ai/dsh-error':
         specifier: workspace:*
         version: link:../../packages/util/error
+      '@deepseek-ai/dsh-host-webserver':
+        specifier: workspace:*
+        version: link:../../packages/host/webserver
       '@deepseek-ai/dsh-session':
         specifier: workspace:*
         version: link:../../packages/core/session

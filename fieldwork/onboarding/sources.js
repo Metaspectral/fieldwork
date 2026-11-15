@@ -5,6 +5,8 @@
  * These calls send the field's location to the service named. Nothing else is sent.
  */
 import { CROP_MAP_NAMES } from './crops.js'
+import { circleRing, earthdataToken, seasonGreenness } from './hls.js'
+import { SETTINGS } from './settings.js'
 
 const TIMEOUT_MS = 60_000
 /** The crop map answers one point at a time and sometimes stalls, so give up sooner and try once more. */
@@ -66,7 +68,11 @@ async function pool(tasks, limit) {
   return results
 }
 
-export function createSources(fetchImpl = fetch) {
+/**
+ * @param fetchImpl - fetch, replaceable in tests
+ * @param options.tokenFile - file holding a NASA Earthdata token; `EARTHDATA_TOKEN` wins when set. The token is read per call and never returned.
+ */
+export function createSources(fetchImpl = fetch, { tokenFile } = {}) {
   return {
     /** County and state from the US Census. Returns { inUS: false } outside the United States. */
     async locate({ latitude, longitude }, signal) {
@@ -136,8 +142,15 @@ export function createSources(fetchImpl = fetch) {
       return { start: `${days[0].slice(0, 4)}-${days[0].slice(4, 6)}-${days[0].slice(6, 8)}`, rainMm: days.map(d => clean(rain[d])), tmaxC: days.map(d => clean(hottest[d])) }
     },
 
+    /** Peak greenness per season from NASA HLS images, inside a circle of the field's size. Null without an Earthdata token. */
+    async greenness({ latitude, longitude, years, acres }, signal) {
+      const token = earthdataToken(tokenFile)
+      if (!token || !(acres > 0)) return null
+      const ring = circleRing({ latitude, longitude }, Math.sqrt(acres * 4046.8564224 / Math.PI))
+      return (await seasonGreenness({ ring, years, token, settings: SETTINGS.greenness, signal, fetchImpl })).peaks
+    },
+
     // Not connected yet: see NOT_CONNECTED.
-    async greenness() { return null },
     async waterUse() { return null },
     async storedWater() { return null },
     async fertilizerPrice() { return null },
@@ -186,7 +199,7 @@ export async function gather(field, years, saved, sources, part, settings, signa
     if (soil) saved.soil = soil
   }
   for (const key of ['greenness', 'waterUse', 'storedWater', 'fertilizerPrice']) {
-    saved[key] ??= await attempt(key, () => sources[key]({ latitude, longitude, years }, signal))
+    saved[key] ??= await attempt(key, () => sources[key]({ latitude, longitude, years, acres: field.acres }, signal))
   }
   for (const gap of NOT_CONNECTED) {
     const key = { 'crop greenness': 'greenness', 'water the crop used': 'waterUse', 'the region\'s stored water': 'storedWater', 'fertilizer prices': 'fertilizerPrice' }[gap.what]
