@@ -2,17 +2,18 @@
 
 English | [中文](README.zh.md)
 
-Fieldwork extends the actual DeepSeek Harness application. It registers independent My Farm, Community, Crop Experiments, and Seed Costs Cordis plugins in a Fieldwork agent preset, with a Host-owned private-record service. There are no custom HTTP routes, HTML screens, stylesheets, or replacement navigation.
+Fieldwork extends the actual DeepSeek Harness application. It registers independent My Farm, Community, Crop Experiments, and Seed Costs Cordis plugins in a Fieldwork agent preset, with a Host-owned private-record service. The [UI plugin](../ui/README.md) adds native My farm, Community, and Experiments panels. Their authenticated JSON transport shares the same record owner; the Harness retains its shell and navigation.
 
 ## Run
 
 Follow the [team setup](../SETUP.md), then run from the repository root:
 
 ```sh
-DSH_HOME="$PWD/.fieldwork/native" DSH_TELEMETRY_DISABLED=1 pnpm dsh --profile web --patch fieldwork/plugins/cordis.source.patch.yml --no-open
+pnpm run fieldwork:build
+pnpm run fieldwork:start --no-open
 ```
 
-Open the authenticated URL printed by the server. Select the **Fieldwork** agent preset in the native new-session selector. Configure your model using Harness settings. The preset mounts separate Cordis components. Capability enable/disable is configured in the source composition for this POC; there is no custom toggle UI. The test suite uses the actual Loader and native executor without a model API call; real-model behavior is not claimed.
+Open the authenticated URL printed by the server. Select the **Fieldwork** agent preset in the native new-session selector. For subscription testing, sign into the local Codex CLI with ChatGPT and select **GPT-6.1 Sol · Codex subscription** in the native model picker. Other providers remain configurable through Harness settings. The preset mounts separate Cordis components. Capability enable/disable is configured in the source composition for this POC; there is no custom toggle UI. Keyless tests use the actual Loader and native executor. An opt-in real-model test also exercises the [Codex subscription bridge](../codex/README.md).
 
 ## Try a conversation
 
@@ -22,7 +23,7 @@ Open the authenticated URL printed by the server. Select the **Fieldwork** agent
 4. “Record that the lower strip remained wet. Keep this observation private.” The observation is stored against the tracked method.
 5. “Preview an inconclusive result summary, without my raw observations.” Publication requires a valid preview and native approval showing the selected content. Removing a shared summary preserves private records.
 
-The preset includes no shell or arbitrary filesystem tools. Read-only operations do not prompt. Every mutation is gated by the Harness tool pipeline, not an `approved` argument or model promise. Missing approval support fails closed. A configured model receives context returned by tools.
+The preset includes no shell or arbitrary filesystem tools. Read-only operations do not prompt. Every model-requested mutation is gated by the Harness tool pipeline, not an `approved` argument or model promise. Missing approval support fails closed. A configured model receives context returned by tools.
 
 ## Local records and limits
 

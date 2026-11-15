@@ -1,0 +1,17 @@
+{
+  "name": "@fieldwork/codex",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Opt-in local Codex CLI subscription bridge for Fieldwork model testing.",
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "node --import tsx/esm --test bridge.test.ts"
+  },
+  "dependencies": {
+    "@deepseek-ai/cordis": "workspace:~",
+    "@deepseek-ai/dsh-llm": "workspace:*",
+    "zod": "4.6.6",
+    "@deepseek-ai/schemastery": "workspace:~"
+  }
+}

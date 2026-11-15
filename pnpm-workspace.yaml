@@ -1,5 +1,7 @@
 packages:
   - fieldwork/plugins
+  - fieldwork/ui
+  - fieldwork/codex
   - vendor/*
   - packages/*/*
   # The Landlock launcher is developed with its harness consumers but keeps

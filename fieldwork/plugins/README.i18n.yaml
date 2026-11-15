@@ -3,14 +3,14 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write fieldwork/plugins/README.md
 /native-fieldwork-plugins:
-  en: 0edaac1dffa47060
-  zh: 2a1c0b6154abdc4c
+  en: 318708ca6127a582
+  zh: 55a0e4d9307b5e92
 /native-fieldwork-plugins/run:
-  en: 3d4e59566f8c6711
-  zh: 3852232e4a690f28
+  en: 72c6dfbf4c599bbf
+  zh: 292d6c4188a3b107
 /native-fieldwork-plugins/try-a-conversation:
-  en: fd982a107bc69ef8
-  zh: 1f3b55bd9fdd345a
+  en: 3252f16260a268d8
+  zh: 05728455166e48cb
 /native-fieldwork-plugins/local-records-and-limits:
   en: 927430494496280e
   zh: 85cc870dbbf8e550

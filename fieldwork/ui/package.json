@@ -1,0 +1,26 @@
+{
+  "name": "@fieldwork/ui",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Native Harness farm, community, and experiment pages.",
+  "main": "src/index.ts",
+  "exports": { ".": "./src/index.ts", "./client": "./lib/client.js", "./package.json": "./package.json" },
+  "dsh": { "client": { "platform": "web", "immediately": true, "inject": ["@deepseek-ai/dsh-client-ui-layout", "@deepseek-ai/dsh-client-ui-sidebar", "@deepseek-ai/dsh-client-ui-renderer", "@deepseek-ai/dsh-client-locale"] } },
+  "scripts": { "build": "tsdown --config-loader native", "typecheck": "tsc -p tsconfig.json" },
+  "dependencies": {
+    "@fieldwork/plugins": "workspace:*",
+    "@deepseek-ai/cordis": "workspace:~",
+    "@deepseek-ai/dsh-host-webserver": "workspace:*",
+    "@deepseek-ai/dsh-client-locale": "workspace:*",
+    "@deepseek-ai/dsh-client-store": "workspace:*",
+    "@deepseek-ai/dsh-client-ui-layout": "workspace:*",
+    "@deepseek-ai/dsh-client-ui-sidebar": "workspace:*",
+    "@deepseek-ai/dsh-client-ui-renderer": "workspace:*",
+    "@deepseek-ai/dsh-client-ui-slots": "workspace:*",
+    "@deepseek-ai/dsh-client-ui-primitives": "workspace:*",
+    "react": "^18.2.0",
+    "zod": "4.6.6"
+  },
+  "devDependencies": { "@types/react": "~18.3.1" }
+}

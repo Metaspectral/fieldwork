@@ -31,6 +31,7 @@ function demo(): FarmState {
 }
 /** One record owner serializes changes and commits storage before publishing snapshots. */
 export class FarmRecords {
+  private readonly listeners = new Set<() => void>()
   private queue: Promise<unknown> = Promise.resolve()
   private readonly previews = new Map<string, ShareSummary>()
   private constructor(private readonly file: string, private state: FarmState) {}
@@ -42,6 +43,8 @@ export class FarmRecords {
       throw new FarmError('Could not open farm records; the existing file has been preserved.', 'FARM_STORAGE', error)
     }
   }
+  /** Subscribe to successful commits; disposal removes the listener. */
+  subscribe(listener: () => void): () => void { this.listeners.add(listener); return () => { this.listeners.delete(listener) } }
   /** Return detached private records; callers choose which fields to disclose. */
   snapshot(): FarmState { return structuredClone(this.state) }
   /** Persist a validated domain mutation. Tool callers must pass native approval first. */
@@ -56,6 +59,7 @@ export class FarmRecords {
         await rename(`${this.file}.tmp`, this.file)
       } catch (error) { throw new FarmError('Could not save farm records; accepted records are unchanged.', 'FARM_STORAGE', error) }
       this.state = next
+      for (const listener of this.listeners) listener()
       return this.snapshot()
     })
     this.queue = operation.catch(() => undefined)

@@ -1,4 +1,4 @@
-# Native Harness plugins only. No custom HTTP route, HTML app, or UI replacement.
+# Native Harness tools, panels, and optional local Codex model provider.
 - insert:
     - id: fieldwork-records
       name: './records.ts'
@@ -6,3 +6,7 @@
         file: !!js process.getBuiltinModule('node:path').join(process.env.DSH_HOME || process.getBuiltinModule('node:path').join(process.getBuiltinModule('node:os').homedir(), '.dsh'), 'fieldwork-native', 'records.v1.json')
     - id: fieldwork-preset
       name: './preset.ts'
+    - id: fieldwork-pages
+      name: '../ui/src/index.ts'
+    - id: fieldwork-codex-subscription
+      name: '../codex/index.ts'

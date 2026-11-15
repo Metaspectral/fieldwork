@@ -2,17 +2,18 @@
 
 [English](README.md) | 中文
 
-Fieldwork 扩展真正的 DeepSeek Harness 应用，在 Fieldwork 智能体预设中注册独立的 My Farm、Community、Crop Experiments 和 Seed Costs Cordis 插件，并由 Host 服务拥有私人记录。没有定制 HTTP 路由、HTML 页面、样式表或替代导航。
+Fieldwork 扩展真正的 DeepSeek Harness 应用，在 Fieldwork 智能体预设中注册独立的 My Farm、Community、Crop Experiments 和 Seed Costs Cordis 插件，并由 Host 服务拥有私人记录。[UI 插件](../ui/README.zh.md)添加原生 My farm、Community 和 Experiments 面板。经过认证的 JSON 传输共享同一记录所有者，Harness 保留现有外壳和导航。
 
 ## 运行
 
 按照[团队设置](../SETUP.md)操作，然后从仓库根目录运行：
 
 ```sh
-DSH_HOME="$PWD/.fieldwork/native" DSH_TELEMETRY_DISABLED=1 pnpm dsh --profile web --patch fieldwork/plugins/cordis.source.patch.yml --no-open
+pnpm run fieldwork:build
+pnpm run fieldwork:start --no-open
 ```
 
-打开服务器打印的认证链接。在原生新会话选择器中选择 **Fieldwork** 智能体预设，通过 Harness 设置配置模型。预设挂载独立的 Cordis 组件。本概念验证通过源码组合配置能力的启用和禁用，没有定制开关界面。测试使用真实 Loader 和原生执行器，不调用模型 API；不声称验证了真实模型行为。
+打开服务器打印的认证链接。在原生新会话选择器中选择 **Fieldwork** 智能体预设，如需订阅测试，在本地 Codex CLI 中使用 ChatGPT 登录，然后在原生模型选择器中选择 **GPT-6.1 Sol · Codex subscription**。其他提供商仍可通过 Harness 设置配置。预设挂载独立的 Cordis 组件。本概念验证通过源码组合配置能力的启用和禁用，没有定制开关界面。无密钥测试使用真实 Loader 和原生执行器。可选的真实模型测试也验证 [Codex 订阅桥接](../codex/README.zh.md)。
 
 ## 尝试对话
 
@@ -22,7 +23,7 @@ DSH_HOME="$PWD/.fieldwork/native" DSH_TELEMETRY_DISABLED=1 pnpm dsh --profile we
 4. “记录较低条带仍然潮湿，保持该观察私密。”观察保存在已跟踪方法下。
 5. “预览结果不确定的摘要，不包括原始观察。”发布需要有效预览及显示选定内容的原生审批。移除共享摘要会保留私人记录。
 
-该预设没有 shell 或任意文件系统工具。只读操作不提示。所有修改由 Harness 工具流水线审批，而非 `approved` 参数或模型承诺。缺少审批支持时拒绝执行。配置的模型会收到工具返回的上下文。
+该预设没有 shell 或任意文件系统工具。只读操作不提示。模型请求的所有修改由 Harness 工具流水线审批，而非 `approved` 参数或模型承诺。缺少审批支持时拒绝执行。配置的模型会收到工具返回的上下文。
 
 ## 本地记录及限制
 
