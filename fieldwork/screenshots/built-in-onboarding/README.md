@@ -10,6 +10,12 @@ The saved setup conversation waits for a connected model.
 
 ![Connect the agent](agent-setup.png)
 
+## Dark model setup
+
+The welcome panel keeps the same spacing and readable text in dark mode.
+
+![Dark model setup](dark-setup.png)
+
 ## First farm question
 
 After model selection, Codex loads the onboarding skill and asks how to begin.

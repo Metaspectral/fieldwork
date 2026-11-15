@@ -49,7 +49,7 @@ export function apply(ctx: Context): void {
   const setupFace = (id?: string, hero?: boolean): SetupFace => ({ hooks: { setup: onboarding.store }, id, hero, open: () => onboarding.open(), begin: () => onboarding.begin(), leave: action => onboarding.leave(action) })
   ctx.slots.inject('main', () => ctx.slots.register({ name: 'main', key: setupId, locale: 'fieldwork', inject: () => setupFace() }, SetupCard))
   ctx.slots.inject('sidebar.panellist', () => ctx.slots.register({ name: 'sidebar.panellist', id: setupId, order: -31, locale: 'fieldwork', label: () => t('setup') }, FarmIcon))
-  ctx.slots.inject('conversation.hero.options', () => ctx.slots.register({ name: 'conversation.hero.options', id: 'fieldwork-onboarding', locale: 'fieldwork', inject: id => setupFace(id, true) }, SetupCard))
+  ctx.slots.inject('conversation.input.dock', () => ctx.slots.register({ name: 'conversation.input.dock', id: 'fieldwork-onboarding', locale: 'fieldwork', inject: id => setupFace(id, true) }, SetupCard))
   ctx.slots.inject('conversation.session.header.utilities', () => ctx.slots.register({ name: 'conversation.session.header.utilities', id: 'fieldwork-onboarding', locale: 'fieldwork', inject: id => setupFace(id) }, SetupMenu))
   void onboarding.boot()
   const sections = [{ section: 'farm', icon: FarmIcon }, { section: 'community', icon: CommunityIcon }, { section: 'experiments', icon: ExperimentIcon }] as const

@@ -1,16 +1,25 @@
-/** First-run guidance sits beside the native model picker and conversation. */
+/** First-run guidance occupies the native full-width area above the composer. */
 import type { PropsLocale, InjectFace } from '@deepseek-ai/dsh-client-ui-slots'
 import { useState } from 'react'
 import { Button, Modal } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { SetupFace } from './onboarding-controller.ts'
 import css from './page.module.css'
 type Props = PropsLocale<'fieldwork'> & InjectFace<SetupFace>
-/** One compact setup card works on the blank hero, active composer, and setup page. */
+/** A readable welcome panel sits above model selection; the setup page remains independently accessible. */
 export function SetupCard({ t, useSetup, id, hero, open, begin, leave }: Props) {
   const s = useSetup(x => x)
   const p = s.progress
   if (id && (id !== p?.sessionId || p.phase === 'deferred' || p.phase === 'complete')) return null
-  if (hero) return <section className={css.setupHero} aria-label={t('setup')}><div><strong>{t('setup')}</strong><p>{t('setupPickModel')}</p><small>{t('setupDemoShort')}</small>{s.error && <p role="alert">{s.error}</p>}</div><Button disabled={s.busy} onClick={() => void leave('defer')}>{t('setupLater')}</Button></section>
+  if (hero) {
+    if (p?.phase !== 'agent-setup') return null
+    return <section className={css.setupWelcome} aria-label={t('setup')}>
+      <p className={css.setupEyebrow}>{t('setup')}</p>
+      <h2>{t('setupConnect')}</h2>
+      <p className={css.setupWelcomeBody}>{t('setupPickModel')}</p>
+      {s.error && <p role="alert">{s.error}</p>}
+      <div className={css.setupWelcomeFooter}><p>{t('setupDemoShort')}</p><Button variant="outline" disabled={s.busy} onClick={() => void leave('defer')}>{t('setupLater')}</Button></div>
+    </section>
+  }
   return <section className={css.setupCard} aria-label={t('setup')}>
     <><p className={css.brandLine}>{t('brandLine')}</p><h2>{t('setup')}</h2><p>{t(p?.phase === 'agent-setup' ? 'setupAgent' : p?.phase === 'complete' ? 'setupComplete' : p?.phase === 'deferred' ? 'setupDeferred' : 'setupIntro')}</p><p className={css.notice}>{t('setupDemo')}</p></>
     {s.error && <p role="alert">{s.error}</p>}
