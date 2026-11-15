@@ -75,6 +75,7 @@ export function greennessHits(peaks: Record<number, number>, crops: Record<numbe
   const out: Record<number, { usual: number | null; hit: boolean | null }> = {}
   for (const [key, crop] of Object.entries(crops)) {
     const year = Number(key), peak = peaks[year]
+    if (crop === 'unknown') { out[year] = { usual: null, hit: null }; continue }
     const others = Object.entries(crops).filter(([y, c]) => c === crop && Number(y) !== year && peaks[Number(y)] !== undefined).map(([y]) => peaks[Number(y)]!)
     const usual = others.length >= 2 ? others.reduce((a, b) => a + b, 0) / others.length : null
     out[year] = { usual, hit: peak === undefined || usual === null || crop === 'unknown' ? null : peak <= (1 - drop) * usual }

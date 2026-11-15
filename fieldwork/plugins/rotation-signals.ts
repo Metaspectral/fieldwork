@@ -21,10 +21,10 @@ declare module '@deepseek-ai/cordis' { interface Context { nasaChecks: NasaCheck
 export const name = 'fieldwork-rotation-signals'
 /** Farm records (field locations) and the Host web server (the page's route). */
 export const inject = ['farmRecords', 'webServer']
-/** Where checks are saved, where the Earthdata token is read from, and the first weather year. */
-export interface Config { file: string; earthdataTokenFile: string; firstWeatherYear: number }
+/** Where checks are saved, where the Earthdata token is read from, the first weather year, and how many crop-map years are asked at once. */
+export interface Config { file: string; earthdataTokenFile: string; firstWeatherYear: number; cropMapBatch: number }
 /** Validated at composition time. */
-export const Config: schema<Config> = schema.object({ file: schema.string().required(), earthdataTokenFile: schema.string().required(), firstWeatherYear: schema.number().min(1981).max(2100).default(1981) })
+export const Config: schema<Config> = schema.object({ file: schema.string().required(), earthdataTokenFile: schema.string().required(), firstWeatherYear: schema.number().min(1981).max(2100).default(1981), cropMapBatch: schema.number().min(1).max(13).default(3) })
 
 const MAX_CHECKS = 20
 const area = (ring: Ring) => { // shoelace on a local flat projection, hectares
@@ -82,7 +82,11 @@ export class NasaChecks {
     const weather = await sources.weather({ latitude, longitude, firstYear: this.config.firstWeatherYear, lastYear }, signal)
     if (!weather) throw new NasaCheckError('NASA POWER weather could not be read. Try again later.')
     const fieldYears = Array.from({ length: lastYear - fieldFirst + 1 }, (_, i) => fieldFirst + i)
-    const mapped = await Promise.all(fieldYears.map(year => sources.cropMap({ latitude, longitude, acres: areaHa * 2.4710538, year, points: SETTINGS.crop.samplePoints }, signal).catch(() => null)))
+    // The crop map stalls under load; ask a few years at a time, like onboarding does.
+    const mapped: (Awaited<ReturnType<typeof sources.cropMap>>)[] = []
+    for (let i = 0; i < fieldYears.length; i += this.config.cropMapBatch) {
+      mapped.push(...await Promise.all(fieldYears.slice(i, i + this.config.cropMapBatch).map(year => sources.cropMap({ latitude, longitude, acres: areaHa * 2.4710538, year, points: SETTINGS.crop.samplePoints }, signal).catch(() => null))))
+    }
     const field_ = this.ctx.farmRecords.snapshot().fields.find(f => f.id === field.id)
     const crops: Record<number, string> = {}, cropSource: Record<number, FieldYear['cropSource']> = {}
     fieldYears.forEach((year, i) => {

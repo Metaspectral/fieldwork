@@ -1,5 +1,5 @@
 /** NASA checks for rotation plans: one action per field, a dialog with odds from past seasons and the field's own record. Drawn only when the plugin is installed. */
-import { useEffect, useState, type ReactNode } from 'react'
+import { useEffect, useState, useSyncExternalStore, type ReactNode } from 'react'
 import { Button, Modal } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { FarmState } from '../../../plugins/records.ts'
 import { expectedProfit, type Flag, type FlagOdds, type NasaCheck, type NasaStatus } from '../../../plugins/rotation-signals-domain.ts'
@@ -12,34 +12,33 @@ const ROUTE = 'fieldwork-nasa-checks'
 const pct = (v: number | null) => v === null ? '—' : `${Math.round(v * 100)}%`
 const num = (v: number | null, places = 2) => v === null ? '—' : v.toFixed(places)
 
-let first: Promise<NasaStatus | 'absent'> | null = null
-/** One status request per page load, shared by every action on the page. */
-function loadStatus(): Promise<NasaStatus | 'absent'> {
-  first ??= fetch(new URL(ROUTE, document.baseURI)).then(async r => r.ok ? await r.json() as NasaStatus : 'absent' as const).catch(() => 'absent' as const)
-  return first
+/** Page-level state, so a long check survives the row or card that started it being re-rendered. */
+interface Shared { status: NasaStatus | null | 'absent'; running: string | null; open: NasaCheck | null; error: string | null; errorFor: string | null }
+let shared: Shared = { status: null, running: null, open: null, error: null, errorFor: null }
+const listeners = new Set<() => void>()
+const update = (change: Partial<Shared>) => { shared = { ...shared, ...change }; for (const l of listeners) l() }
+let loading = false
+function load(): void {
+  if (loading) return
+  loading = true
+  fetch(new URL(ROUTE, document.baseURI)).then(async r => update({ status: r.ok ? await r.json() as NasaStatus : 'absent' })).catch(() => update({ status: 'absent' }))
+}
+async function run(body: { fieldId: string } | { demo: true }, key: string): Promise<void> {
+  update({ running: key, error: null, errorFor: key })
+  try {
+    const r = await fetch(new URL(ROUTE, document.baseURI), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+    const reply = await r.json() as NasaStatus & { check?: NasaCheck; error?: string }
+    if (!r.ok || !reply.check) { update({ error: reply.error ?? null }); return }
+    update({ status: { connected: reply.connected, checks: reply.checks }, open: reply.check })
+  } catch (error) { update({ error: error instanceof Error ? error.message : null }) }
+  finally { update({ running: null }) }
 }
 
 /** Shared request state for the page: status, a running field, the open check, and errors. */
 function useNasaChecks() {
-  const [status, setStatus] = useState<NasaStatus | null | 'absent'>(null)
-  const [running, setRunning] = useState<string | null>(null)
-  const [open, setOpen] = useState<NasaCheck | null>(null)
-  const [error, setError] = useState<string | null>(null)
-  useEffect(() => {
-    let live = true
-    void loadStatus().then(s => { if (live) setStatus(s) })
-    return () => { live = false }
-  }, [])
-  const run = async (body: { fieldId: string } | { demo: true }, key: string) => {
-    setRunning(key); setError(null)
-    try {
-      const r = await fetch(new URL(ROUTE, document.baseURI), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
-      const reply = await r.json() as NasaStatus & { check?: NasaCheck; error?: string }
-      if (!r.ok || !reply.check) { setError(reply.error ?? null); return }
-      setStatus({ connected: reply.connected, checks: reply.checks }); setOpen(reply.check)
-    } finally { setRunning(null) }
-  }
-  return { status, running, open, setOpen, error, run }
+  const s = useSyncExternalStore(l => { listeners.add(l); return () => listeners.delete(l) }, () => shared)
+  useEffect(load, [])
+  return { ...s, setOpen: (open: NasaCheck | null) => update({ open }), run }
 }
 
 /** A card on My farm listing fields with a "NASA checks" action each, plus the test outline. */
@@ -78,8 +77,8 @@ export function NasaChecksAction({ fieldId, t }: { fieldId: string; t: T }): Rea
   const last = s.status.checks.find(c => c.fieldId === fieldId)
   return <>
     <Button variant="outline" disabled={s.running !== null} onClick={() => last ? s.setOpen(last) : void s.run({ fieldId }, fieldId)}>{s.running === fieldId ? t('nasaRunning') : t('nasaChecks')}</Button>
-    {s.error && <span role="alert" className={css.error}>{s.error}</span>}
-    <NasaCheckDialog check={s.open} onClose={() => s.setOpen(null)} t={t} onRerun={() => void s.run({ fieldId }, fieldId)} />
+    {s.error && s.errorFor === fieldId && <span role="alert" className={css.error}>{s.error}</span>}
+    <NasaCheckDialog check={s.open?.fieldId === fieldId ? s.open : null} onClose={() => s.setOpen(null)} t={t} onRerun={() => void s.run({ fieldId }, fieldId)} />
   </>
 }
 
@@ -97,7 +96,7 @@ export function NasaCheckDialog({ check, onClose, t, onRerun }: { check: NasaChe
   const n = Number(normal), u = Number(unusual), ready = normal !== '' && unusual !== '' && Number.isFinite(n) && Number.isFinite(u)
   const e = check.odds.unusual
   const flagText = (y: NasaCheck['years'][number]) => [y.dry && t('nasaDry'), y.hot && t('nasaHot'), y.wetSpring && t('nasaWetSpring')].filter(Boolean).join(', ') || (y.unusual === null ? '—' : t('nasaNormal'))
-  return <Modal open onClose={onClose} closeLabel={t('close')} title={`${t('nasaChecks')} · ${check.fieldName}`}>
+  return <Modal className={own.modal!} contentClassName={own.modalContent!} open onClose={onClose} closeLabel={t('close')} title={`${t('nasaChecks')} · ${check.fieldName}`}>
     <div className={own.dialog}>
       <p className={css.notice}>{check.location.latitude}, {check.location.longitude} · {check.location.areaHa} ha · {t('nasaChecked')} {check.checkedAt.slice(0, 10)}{check.demo && <> · <strong>{t('nasaTestLabel')}</strong></>}</p>
       <p className={own.lead}>{t('nasaInforms')}</p>
@@ -107,8 +106,8 @@ export function NasaCheckDialog({ check, onClose, t, onRerun }: { check: NasaChe
       <p className={css.notice}>{t('nasaRules')}</p>
       <h3>{t('nasaFieldTitle')}</h3>
       <p className={css.notice}>{check.greenness.connected ? `${t('nasaGreennessFrom')} ${check.greenness.seasons} · ${t('nasaScenes')} ${check.greenness.scenesUsed} / ${check.greenness.scenesFound}` : t('nasaNoGreenness')}{check.greenness.note && ` · ${check.greenness.note}`}</p>
-      <table className={own.table}><thead><tr><th scope="col">{t('nasaYear')}</th><th scope="col">{t('crop')}</th><th scope="col">{t('nasaSeason')}</th><th scope="col">{t('nasaRain')}</th><th scope="col">{t('nasaSpringRain')}</th><th scope="col">{t('nasaPeak')}</th><th scope="col">{t('nasaUsual')}</th><th scope="col">{t('nasaLower')}</th></tr></thead>
-        <tbody>{check.years.map(y => <tr key={y.year} data-unusual={y.unusual === true}><th scope="row">{y.year}</th><td>{y.crop}{y.cropSource === 'farmer' && ' *'}</td><td>{flagText(y)}</td><td>{pct(y.rainShare)}</td><td>{pct(y.springRainShare)}</td><td>{num(y.greenness)}</td><td>{num(y.usualGreenness)}</td><td>{y.hit === null ? '—' : t(y.hit ? 'nasaYes' : 'nasaNo')}</td></tr>)}</tbody></table>
+      <div className={own.scroll}><table className={own.table}><thead><tr><th scope="col">{t('nasaYear')}</th><th scope="col">{t('nasaCrop')}</th><th scope="col">{t('nasaSeason')}</th><th scope="col">{t('nasaRain')}</th><th scope="col">{t('nasaSpringRain')}</th><th scope="col">{t('nasaPeak')}</th><th scope="col">{t('nasaUsual')}</th><th scope="col">{t('nasaLower')}</th></tr></thead>
+        <tbody>{check.years.map(y => <tr key={y.year} data-unusual={y.unusual === true}><th scope="row">{y.year}</th><td>{y.crop}{y.cropSource === 'farmer' && ' *'}</td><td>{flagText(y)}</td><td>{pct(y.rainShare)}</td><td>{pct(y.springRainShare)}</td><td>{num(y.greenness)}</td><td>{num(y.usualGreenness)}</td><td>{y.hit === null ? '—' : t(y.hit ? 'nasaYes' : 'nasaNo')}</td></tr>)}</tbody></table></div>
       <h3>{t('nasaByCrop')}</h3>
       <ul>{check.crops.map(c => <li key={c.crop}><strong>{c.crop}</strong>: {t('nasaUnusualSeasons')} {c.unusualSeasons.join(', ') || '—'} · {t('nasaLowerIn')} {c.hits.join(', ') || '—'} ({c.hits.length} / {c.withGreenness} {t('nasaWithReading')})</li>)}</ul>
       <h3>{t('nasaProfitTitle')}</h3>

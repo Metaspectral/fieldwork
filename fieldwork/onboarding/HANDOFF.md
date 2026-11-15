@@ -172,16 +172,17 @@ Two pretend notes were changed from the mockup on purpose, because no listed sou
 
 ### 2. Data sources that are not connected
 
-These four are stubs that return nothing (`sources.js` lines 140 to 143). The rules that use them are written and tested with stand-in numbers; only the fetching is missing.
+These three are stubs that return nothing. The rules that use them are written and tested with stand-in numbers; only the fetching is missing.
 
 | Source | Needs | What is empty until it is connected | Shape the rules expect |
 |---|---|---|---|
-| Crop greenness (NASA's Harmonized Landsat and Sentinel-2 images) | NASA Earthdata login, plus code to read images inside the field edge | The "crop hit" part of drought and heat. Without it, drought and heat can only ever be "true for your region" | `{ 2022: 0.71 }`: peak greenness per year, 0 to 1 |
 | Water the crop used (OpenET) | Account key | Water is "no reading" every year | `{ "2022-7": 6.2 }`: inches per year-month |
 | The region's stored water (NASA GRACE and GRACE-FO) | NASA Earthdata login | Water is "no reading" every year | `{ 2022: -3.1 }`: change that year; below zero means it fell |
 | Fertilizer prices (USDA price records) | Free key | Costs is "no reading" every year | `{ 2022: 0.62 }`: dollars per pound |
 
-So today, on real data, **only drought and heat, topsoil and salt ever get a reading.** Water and costs never do.
+Crop greenness is now connected: `sources.greenness` reads NASA HLS v2.0 inside a circle of the field's size through `hls.js` when a NASA Earthdata token is available (`EARTHDATA_TOKEN`, or the file named by the `earthdataTokenFile` setting). Without a token it still gives "no reading". HLS starts in 2013, so earlier years have no greenness. The same reader feeds the NASA checks for rotation plans (`plugins/rotation-signals.ts`), which also add a wet-spring rule (`settings.js` `wetSpring`).
+
+So today, on real data, **only drought and heat (with crop greenness when a token is set), topsoil and salt ever get a reading.** Water and costs never do.
 
 Known limits to handle when connecting them (from the spec): GRACE has a gap from mid-2017 to mid-2018 and covers regions hundreds of kilometres wide; OpenET covers the western United States only; nobody has checked which years OpenET has.
 

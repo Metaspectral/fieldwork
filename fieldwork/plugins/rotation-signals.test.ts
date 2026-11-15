@@ -15,6 +15,10 @@ describe('NASA checks', () => {
     const r = greennessHits({ 2020: 0.6, 2022: 0.7 }, { 2020: 'soybean', 2022: 'soybean' }, 0.1)
     assert.deepEqual(r[2020], { usual: null, hit: null })
   })
+  test('an unknown crop has no usual greenness', () => {
+    const r = greennessHits({ 2019: 0.6, 2020: 0.8, 2021: 0.8 }, { 2019: 'unknown', 2020: 'unknown', 2021: 'unknown' }, 0.1)
+    assert.deepEqual(r[2019], { usual: null, hit: null })
+  })
   test('per crop: unusual seasons, readings and hits', () => {
     const s = summariseCrops([year(2019, 'corn', true, true), year(2020, 'corn', false, false), year(2021, 'soybean', true, null), year(2022, 'unknown', true, null)])
     assert.deepEqual(s, [{ crop: 'corn', unusualSeasons: [2019], withGreenness: 1, hits: [2019] }, { crop: 'soybean', unusualSeasons: [2021], withGreenness: 0, hits: [] }])
