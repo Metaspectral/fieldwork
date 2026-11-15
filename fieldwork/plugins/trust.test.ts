@@ -67,7 +67,7 @@ test('the prompt never blocks requests, names the current stage, and keeps the p
   assert.match(text, /Stage 1 of 4, "Show what happened"/)
   assert.match(text, /Do not mention this guideline/)
   assert.match(text, /never shared with buyers, lenders or insurers/)
-  assert.match(promptSection(evaluate(add(initialState(), 'history_viewed', 'history_viewed', 'question_asked', 'source_opened', 'risk_viewed'), DEFAULT_RULES)), /Stage 3 of 4, "Suggest a small trial": You may suggest, at most once/)
+  assert.match(promptSection(evaluate(add(initialState(), 'history_viewed', 'history_viewed', 'question_asked', 'source_opened', 'risk_viewed'), DEFAULT_RULES)), /Stage 3 of 4, "Suggest a small trial": If you have not offered a trial in this conversation yet, end this reply with one short offer/)
 })
 
 test('trust records persist atomically and an invalid file is preserved', async () => {

@@ -22,7 +22,7 @@ export type Stage = 1 | 2 | 3 | 4
 export const STAGES: Record<Stage, { readonly name: string; readonly farmer: string; readonly agent: string }> = {
   1: { name: 'Show what happened', farmer: 'Answers what you ask, with your field\'s history, risks and sources.', agent: 'Answer what was asked, with history, risks and sources. Do not volunteer changes or plans.' },
   2: { name: 'Explain', farmer: 'Also adds a one-line "why" and points out one thing worth a closer look.', agent: 'You may add, unprompted, a one-line reason behind a finding with its source, and point out one thing worth a closer look. Do not volunteer changes yet.' },
-  3: { name: 'Suggest a small trial', farmer: 'May suggest one small trial on one field, with its dry-year dollars and blockers.', agent: 'You may suggest, at most once in this conversation, one small trial on one field, with its dry-year dollars, blockers and the track record. The rest of the farm keeps the current approach.' },
+  3: { name: 'Suggest a small trial', farmer: 'Offers one small trial on one field, once, with its dry-year dollars and blockers.', agent: 'If you have not offered a trial in this conversation yet, end this reply with one short offer: one small trial on one field, with its dry-year dollars (say when they are examples), its blockers and the track record. Offer it once; the rest of the farm keeps the current approach.' },
   4: { name: 'Talk about a plan', farmer: 'May bring up a multi-year plan, approved one year at a time.', agent: 'You may bring up a multi-year plan when it fits, one year at a time, with what to watch for each year.' },
 }
 

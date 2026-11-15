@@ -21,7 +21,7 @@ The `fieldwork-trust-guide` plugin adds a short "Trust guideline" section to the
 |---|---|---|
 | 1. Show what happened | Nothing beyond the answer | (start) |
 | 2. Explain | A one-line reason with its source, and one thing worth a closer look | looked at the field history, a risk check or a source |
-| 3. Suggest a small trial | One trial on one field, once per conversation, with dry-year dollars and blockers | asked "why?" or opened sources, and asked what a change would cost |
+| 3. Suggest a small trial | One offer of a trial on one field, made once per conversation at the end of a reply, with dry-year dollars and blockers | asked "why?" or opened sources, and asked what a change would cost |
 | 4. Talk about a plan | A multi-year plan, one year at a time | saved a trial and recorded how it turned out |
 
 - After the farmer turns a suggestion down, new suggestions wait for five more actions.
