@@ -30,6 +30,16 @@ export function apply(ctx: Context): void {
       res.writeHead(input ? 400 : 500).end(JSON.stringify({ error: input ? 'Check the setup action.' : 'Could not update farm setup. Your progress has been kept.' }))
     }
   } }))
+  ctx.effect(() => ctx.webServer.register({ kind: 'exact', path: '/fieldwork-original', auth: 'required', async handler(req, res, peer) {
+    if (peer?.principal.kind !== 'owner') { res.writeHead(403).end(); return }
+    if (req.method !== 'GET') { res.writeHead(405).end(); return }
+    try {
+      const id = new URL(req.url ?? '', 'http://localhost').searchParams.get('id') ?? ''
+      const bytes = await ctx.farmRecords.original(id)
+      const filename = ctx.farmRecords.snapshot().sources.find(s => s.id === id)?.filename ?? 'fieldwork-original'
+      res.writeHead(200, { 'Content-Type': 'application/octet-stream', 'Content-Disposition': `attachment; filename="fieldwork-original"; filename*=UTF-8''${encodeURIComponent(filename)}`, 'X-Content-Type-Options': 'nosniff', 'Cache-Control': 'no-store' }).end(bytes)
+    } catch (error) { res.writeHead(error instanceof FarmError && error.code === 'FARM_INPUT' ? 404 : 500).end() }
+  } }))
   const streams = new Map<ServerResponse, () => void>()
   ctx.effect(() => () => { for (const [response, stop] of streams) { stop(); response.end() }; streams.clear() })
   ctx.effect(() => ctx.webServer.register({ kind: 'exact', path: '/fieldwork-data', auth: 'required', async handler(req, res, peer) {
@@ -40,7 +50,7 @@ export function apply(ctx: Context): void {
       if (req.method !== 'POST') { res.writeHead(405).end(); return }
       if (!req.headers.origin || new URL(req.headers.origin).host !== req.headers.host || !req.headers['content-type']?.startsWith('application/json')) { res.writeHead(403).end(); return }
       const chunks: Buffer[] = []; let bytes = 0
-      for await (const chunk of req) { const buffer = Buffer.from(chunk); bytes += buffer.length; if (bytes > 32768) { res.writeHead(413).end(); return }; chunks.push(buffer) }
+      for await (const chunk of req) { const buffer = Buffer.from(chunk); bytes += buffer.length; if (bytes > 7 * 1024 * 1024) { res.writeHead(413).end(); return }; chunks.push(buffer) }
       res.end(JSON.stringify(await perform(ctx.farmRecords, JSON.parse(Buffer.concat(chunks).toString('utf8')))))
     } catch (error) {
       const input = error instanceof ZodError || error instanceof SyntaxError || error instanceof FarmError && error.code === 'FARM_INPUT'

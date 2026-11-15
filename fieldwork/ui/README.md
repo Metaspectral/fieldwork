@@ -2,7 +2,7 @@
 
 English | [中文](README.zh.md)
 
-This private Cordis plugin registers My farm, Community, and Experiments in the Harness main-panel and sidebar slots. It reuses native theme tokens, buttons, dialogs, locale services, and the existing application shell.
+This private Cordis plugin registers My farm, Community, Experiments, Source library, and Corn planning in the Harness main-panel and sidebar slots. It reuses native theme tokens, buttons, dialogs, locale services, and the existing application shell.
 
 ## Use
 
@@ -10,6 +10,8 @@ From the repository root, run `pnpm run fieldwork:build`, then `pnpm run fieldwo
 
 - My farm captures current practices and reasons, compares seed quotes, and saves reviewed calculations.
 - Community displays local sample knowledge. Adapting creates a private draft; withdrawing a summary retains the private trial.
+- Source library imports originals or captures public HTTPS sources and exposes exact cell, page, and block citations.
+- Corn planning connects shared fields and evidence to reviewed seed-budget revisions and dated learning records. See the [method](../docs/corn-method.md).
 - Experiments preserves a baseline, tracks a small change, records observations, and previews a selected summary before sharing locally.
 
 Every page mutation opens an explicit review dialog. Model tool mutations continue to use the native Harness approval pipeline. Both paths use the same Host-owned records; successful commits notify connected pages over authenticated SSE. The JSON endpoints require an owner session; writes also require same-origin JSON requests and an explicit confirmation field.
@@ -18,7 +20,7 @@ Every page mutation opens an explicit review dialog. Model tool mutations contin
 
 ```sh
 pnpm --filter @fieldwork/ui typecheck
-node --test fieldwork/ui/browser.test.mjs
+node --test fieldwork/ui/browser.test.mjs fieldwork/ui/research.browser.test.mjs
 ```
 
 Set `FIELDWORK_BROWSER_CHANNEL=chrome` to use an installed Chrome instead of Playwright's browser. The browser test boots an isolated Harness on an allocated loopback port, checks review-before-save, private adaptation, observations, publication preview, withdrawal, persistence, and mobile overflow. It captures ignored screenshots in `.artifacts/native-pages`.

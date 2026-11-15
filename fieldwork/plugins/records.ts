@@ -1,19 +1,22 @@
 /** Private farm records owned by the local Harness Host, without a separate web interface. */
 import { randomUUID, createHash } from 'node:crypto'
-import { mkdir, rename, writeFile } from 'node:fs/promises'
-import { readFileSync } from 'node:fs'
-import { dirname } from 'node:path'
+import { mkdir, rename, writeFile, readFile } from 'node:fs/promises'
+import { copyFileSync, constants, readFileSync } from 'node:fs'
+import { dirname, join } from 'node:path'
 import { z } from 'zod'
 import type { Context } from '@deepseek-ai/cordis'
 import schema from '@deepseek-ai/schemastery'
 import { HarnessError } from '@deepseek-ai/dsh-error'
+
+import { fieldSchema, sourceSchema, cornPlanSchema } from './domain.ts'
 
 const text = z.string().trim().min(1).max(2000)
 /** Farmer-confirmed current practice and reasoning, with explicit area units. */
 export const farmSchema = z.object({ name: text, region: text, areaHa: z.number().positive().max(100000), crop: text, approach: text, reason: text })
 const trialSchema = z.object({ id: text, title: text, baseline: text, change: text, source: text, status: z.enum(['draft', 'tracking']), observations: z.array(text) })
 const summarySchema = z.object({ id: text, title: text, baseline: text, change: text, takeaway: text, source: text, author: text, sample: z.boolean() })
-const stateSchema = z.object({ version: z.literal(1), farm: farmSchema, trials: z.array(trialSchema), summaries: z.array(summarySchema), comparisons: z.array(z.object({ id: text, pluginVersion: z.literal(1), areaHa: z.number(), bagsPerHa: z.number(), currentCadPerBag: z.number(), alternativeCadPerBag: z.number(), currentCad: z.number(), alternativeCad: z.number(), savingCad: z.number() })) })
+const legacySchema = z.object({ version: z.literal(1), farm: farmSchema, trials: z.array(trialSchema), summaries: z.array(summarySchema), comparisons: z.array(z.object({ id: text, pluginVersion: z.literal(1), areaHa: z.number(), bagsPerHa: z.number(), currentCadPerBag: z.number(), alternativeCadPerBag: z.number(), currentCad: z.number(), alternativeCad: z.number(), savingCad: z.number() })) })
+const stateSchema = legacySchema.extend({ version: z.literal(2), fields: z.array(fieldSchema), sources: z.array(sourceSchema), cornPlans: z.array(cornPlanSchema) })
 /** Private durable record format; community summaries are separate objects. */
 export type FarmState = z.infer<typeof stateSchema>
 /** Exact selected content reviewed before publication. */
@@ -24,7 +27,7 @@ export class FarmError extends HarnessError {
   constructor(message: string, code: 'FARM_INPUT' | 'FARM_STORAGE', cause?: unknown) { super(message, code, cause === undefined ? undefined : { cause }); this.name = 'FarmError' }
 }
 function demo(): FarmState {
-  return { version: 1, farm: { name: 'Alder Creek · fictional demo', region: 'Fraser Valley', areaHa: 12, crop: 'Spring barley', approach: 'Keep barley on the main area and try changes on a small strip.', reason: 'The lower field stays wet longer; soil workability matters more than a fixed planting date.' }, trials: [], comparisons: [], summaries: [
+  return { version: 2, fields: [], sources: [], cornPlans: [], farm: { name: 'Alder Creek · fictional demo', region: 'Fraser Valley', areaHa: 12, crop: 'Spring barley', approach: 'Keep barley on the main area and try changes on a small strip.', reason: 'The lower field stays wet longer; soil workability matters more than a fixed planting date.' }, trials: [], comparisons: [], summaries: [
     { id: 'sample-cover-crop', title: 'Start with a small cover-crop strip', baseline: 'Our usual post-harvest fallow strip', change: 'A locally reviewed cover-crop mix on one neighbouring strip', takeaway: 'One season was inconclusive. Next time record soil conditions and establishment.', source: 'Fictional demonstration method v1', author: 'Maya · fictional grower', sample: true },
     { id: 'sample-field-notes', title: 'Record why you waited to plant', baseline: 'Plant within the usual calendar window', change: 'Record soil workability and the reason for waiting', takeaway: 'Farmer knowledge helps interpret next season. This is not a controlled yield comparison.', source: 'Fictional demonstration knowledge v1', author: 'Jonah · fictional grower', sample: true },
   ] }
@@ -37,11 +40,25 @@ export class FarmRecords {
   private constructor(private readonly file: string, private state: FarmState) {}
   /** Open this plugin's own versioned file; never import the abandoned mockup format. */
   static open(file: string): FarmRecords {
-    try { return new FarmRecords(file, stateSchema.parse(JSON.parse(readFileSync(file, 'utf8')))) }
+    let original: string
+    try { original = readFileSync(file, 'utf8') }
     catch (error) {
       if (error instanceof Error && 'code' in error && error.code === 'ENOENT') return new FarmRecords(file, demo())
-      throw new FarmError('Could not open farm records; the existing file has been preserved.', 'FARM_STORAGE', error)
+      throw new FarmError('Could not read farm records; the existing file has been preserved.', 'FARM_STORAGE', error)
     }
+    try {
+      const raw = JSON.parse(original)
+      if (raw?.version === 1) {
+        const legacy = legacySchema.parse(raw)
+        try { copyFileSync(file, `${file}.v1.backup`, constants.COPYFILE_EXCL) }
+        catch (error) {
+          if (!(error instanceof Error && 'code' in error && error.code === 'EEXIST')) throw error
+          if (readFileSync(`${file}.v1.backup`, 'utf8') !== original) throw new Error('A different v1 migration backup already exists; preserve both files before migrating.')
+        }
+        return new FarmRecords(file, stateSchema.parse({ ...legacy, version: 2, fields: [], sources: [], cornPlans: [] }))
+      }
+      return new FarmRecords(file, stateSchema.parse(raw))
+    } catch (error) { throw new FarmError('Could not open farm records; the existing file has been preserved.', 'FARM_STORAGE', error) }
   }
   /** Subscribe to successful commits; disposal removes the listener. */
   subscribe(listener: () => void): () => void { this.listeners.add(listener); return () => { this.listeners.delete(listener) } }
@@ -64,6 +81,30 @@ export class FarmRecords {
     })
     this.queue = operation.catch(() => undefined)
     return operation
+  }
+  /** Retain immutable original bytes before publishing their catalog entry. */
+  async importSource(bytes: Uint8Array, input: import('./sources.ts').SourceInput) {
+    const { extractSource } = await import('./sources.ts')
+    let source: z.infer<typeof sourceSchema>
+    try { source = await extractSource(bytes, input) }
+    catch (error) { if (error instanceof FarmError || error instanceof z.ZodError) throw error; throw new FarmError('Could not read this original document; check the format or import a readable copy.', 'FARM_INPUT', error) }
+    const file = join(dirname(this.file), 'originals', source.sha256)
+    try {
+      await mkdir(dirname(file), { recursive: true })
+      try { await writeFile(file, bytes, { mode: 0o600, flag: 'wx' }) }
+      catch (error) { if (!(error instanceof Error && 'code' in error && error.code === 'EEXIST')) throw error; if (createHash('sha256').update(await readFile(file)).digest('hex') !== source.sha256) throw new Error('An existing original has different bytes.') }
+    } catch (error) { throw new FarmError('Could not retain the original document; nothing was cataloged.', 'FARM_STORAGE', error) }
+    source.originalFile = source.sha256
+    await this.change(s => { s.sources.push(source) })
+    return structuredClone(source)
+  }
+  /** Serve an owner-selected original as a download, never inline executable HTML. */
+  async original(sourceId: string): Promise<Buffer> {
+    const source = this.state.sources.find(s => s.id === sourceId)
+    if (!source?.originalFile) throw new FarmError('Original document not found.', 'FARM_INPUT')
+    const bytes = await readFile(join(dirname(this.file), 'originals', source.sha256))
+    if (createHash('sha256').update(bytes).digest('hex') !== source.sha256) throw new FarmError('Original document integrity check failed.', 'FARM_STORAGE')
+    return bytes
   }
   /** Prepare selected text only; raw observations and the farm-record object are never attached. */
   preview(id: string, title: string, takeaway: string): { previewId: string; summary: ShareSummary } {

@@ -5,6 +5,7 @@ import type { PropsRuntime, PropsLocale, InjectFace } from '@deepseek-ai/dsh-cli
 import type {} from '@deepseek-ai/dsh-client-ui-sidebar/client'
 import type { FarmState } from '../../../plugins/records.ts'
 import type { Face, Reply } from './controller.ts'
+import { FieldContext } from './fields.tsx'
 import css from './page.module.css'
 /** Props are derived from the native slot and its injected data face. */
 type Props = PropsRuntime<'main'> & PropsLocale<'fieldwork'> & InjectFace<Face>
@@ -42,6 +43,7 @@ export function Page(props: Props): ReactNode {
     {state.error && <p role="alert" className={css.error}>{state.error}</p>}
     {(completed || state.saved) && <p role="status" className={css.notice}>{t('saved')}</p>}
     {props.section === 'farm' && f && <>
+      <FieldContext fields={state.data.fields} t={t} />
       <form key={f.name + f.region + f.areaHa + f.approach + f.reason + f.crop} className={css.card} onSubmit={e => { const v = values(e); ask({ action: 'farm', farm: { ...v, areaHa: Number(v.areaHa) } }, t('saveFarm'), Object.entries(v).map(([k, v]) => [labels[k] ?? k, v])) }}>
         <h2>{t('baseline')}</h2><div className={css.grid}>{input('name', t('name'), f.name)}{input('region', t('region'), f.region)}{input('areaHa', t('area'), f.areaHa, 'number', { min: .01, max: 100000, step: 'any' })}{input('crop', t('crop'), f.crop)}</div>{text('approach', t('baseline'), f.approach)}{text('reason', t('reason'), f.reason)}<Button type="submit" variant="primary" disabled={state.busy}>{t('saveFarm')}</Button>
       </form>

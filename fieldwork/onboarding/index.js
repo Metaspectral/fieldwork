@@ -85,6 +85,9 @@ export class FieldStore {
     return new FieldStore(path, data)
   }
 
+  /** Detached legacy records for the shared-owner migration. */
+  entries() { return structuredClone(this.#data.fields) }
+
   /** A detached copy of one field's record. */
   field(fieldId) {
     return structuredClone(this.#data.fields[fieldId] ?? { years: {}, notes: [] })
@@ -343,7 +346,7 @@ async function loadSkill() {
  */
 export async function apply(ctx, config = {}) {
   const pretend = config.pretend ?? process.env.FIELDWORK_PRETEND !== '0'
-  const store = await FieldStore.open(config.file ?? defaultFile())
+  const store = config.store ?? await FieldStore.open(config.file ?? defaultFile())
   const sources = config.sources ?? createSources()
   const skill = await loadSkill()
   const lastYear = config.lastYear ?? new Date().getUTCFullYear() - 1
@@ -366,7 +369,15 @@ export async function apply(ctx, config = {}) {
     if (JSON.stringify(gathered) !== before) await store.saveGathered(fieldId, gathered)
     const history = computeHistory(field, gathered, corrections, years, SETTINGS)
     if (part === 'crops') return { ...history, problems: [], missing }
-    return { ...history, missing }
+    // The inherited crop water, fertilizer, soil-loss, and risk thresholds have
+    // no regional qualification. Keep the prototype rules out of real decisions.
+    for (const year of history.years) for (const problem of history.problems) {
+      const result = year.results[problem]
+      year.results[problem] = { level: NO_READING, sure: null,
+        readings: problem === 'droughtHeat' ? result.readings.map(r => ({ ...r, sure: r.value === null ? null : REGION, comparedWith: null })) : [],
+        note: 'Risk classification is unavailable: prototype thresholds and crop constants have not been regionally validated. Weather summaries use an assumed crop calendar and are regional context, not field measurements.' }
+    }
+    return { ...history, missing: [...missing, { what: 'validated agronomic risk classification', why: 'Prototype water, fertilizer, soil-loss, and risk thresholds are unqualified. No suitability, yield, or risk recommendation is available.' }] }
   }
 
   ctx.on('tools/pre-execute', async (exec, next) => {
@@ -477,7 +488,7 @@ export async function apply(ctx, config = {}) {
 
   ctx.tools.register(defineTool({
     name: 'field_risks',
-    description: 'The field\'s problems in ranked order, each with its size (high, medium, low) and the years that show it, plus the counts behind the top risk. Problems known only for the region come last. Use these counts word for word; do not work out your own.',
+    description: 'The field\'s problems in ranked order, each with its size (high, medium, low) and the years that show it, plus the counts behind the top risk. Problems known only for the region come last. Demo mode only illustrates rankings. Real mode returns no ranked recommendations until regional validation is implemented.',
     parameters: {
       fieldId: { type: 'string', required: true, description: 'Field id from find_field' },
     },
@@ -505,7 +516,7 @@ export async function apply(ctx, config = {}) {
 
   ctx.tools.register(defineTool({
     name: 'correct_year',
-    description: 'Save the farmer\'s correction to one year of the field history and return the corrected year. Pass the right crop when the crop was wrong or unknown; that year\'s water, topsoil and costs are then worked out again. Always pass what was wrong in the farmer\'s own words.',
+    description: 'Save the farmer\'s correction to one year of the field history and return the corrected year. Pass the right crop when the crop was wrong or unknown; the saved history is updated; real-mode agronomic classifications remain unavailable. Always pass what was wrong in the farmer\'s own words.',
     parameters: {
       fieldId: { type: 'string', required: true, description: 'Field id from find_field' },
       year: { type: 'integer', required: true, description: 'The year that was wrong' },

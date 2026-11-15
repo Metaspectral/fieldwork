@@ -1,0 +1,16 @@
+# Bilingual-pair consistency record for README.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write fieldwork/screenshots/corn-and-evidence/README.md
+/corn-planning-and-source-library:
+  en: f6847fc8f491ec24
+  zh: c10135334db2d37c
+/corn-planning-and-source-library/keep-the-original-workflow:
+  en: 59357d373af55c14
+  zh: e669d58f2eac954d
+/corn-planning-and-source-library/review-a-corn-decision:
+  en: 83a31ed55b0b07a8
+  zh: c8906405f46c726d
+/corn-planning-and-source-library/retain-what-was-learned:
+  en: 8a94bb1d839ce613
+  zh: b15265a9aecc992c

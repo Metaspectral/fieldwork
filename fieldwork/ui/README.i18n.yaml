@@ -3,11 +3,11 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write fieldwork/ui/README.md
 /native-fieldwork-pages:
-  en: 97e5faa80342d033
-  zh: f7f7a60b1ddaf920
+  en: 09620a4559afaf92
+  zh: 0edd40c1f8c8c097
 /native-fieldwork-pages/use:
-  en: 04a11d44cd21eb86
-  zh: 87e3419341a961cd
+  en: ab9681207e72d8ef
+  zh: 1f101e3225bbeebb
 /native-fieldwork-pages/checks-and-limits:
   en: 5c3b6d1d0085c9b9
   zh: 502ba7ca69bb8729

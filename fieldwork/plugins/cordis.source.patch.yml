@@ -7,7 +7,7 @@
     - id: fieldwork-preset
       name: './preset.ts'
     - id: fieldwork-onboarding
-      name: '../onboarding/index.js'
+      name: './onboarding-shared.mjs'
       config:
         pretend: true
     - id: fieldwork-onboarding-progress

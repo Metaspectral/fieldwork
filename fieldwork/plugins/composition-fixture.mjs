@@ -13,7 +13,7 @@ export function apply(ctx) {
     let allow = false
     const approvalDetails = []
     const release = ctx.on('approval/request', (request, next) => {
-      if (!['update_my_farm', 'plan_crop_trial', 'adapt_community_method', 'start_crop_tracking', 'record_crop_observation', 'publish_farm_summary', 'withdraw_farm_summary', 'correct_year', 'save_field_note'].includes(request.toolName)) return next()
+      if (!['update_my_farm', 'plan_crop_trial', 'adapt_community_method', 'start_crop_tracking', 'record_crop_observation', 'publish_farm_summary', 'withdraw_farm_summary', 'correct_year', 'save_field_note', 'save_farm_field', 'catalog_farmer_knowledge', 'capture_farm_source', 'propose_corn_plan', 'accept_corn_plan', 'observe_corn_plan'].includes(request.toolName)) return next()
       approvalDetails.push(request)
       return Promise.resolve(allow ? 'allowed-once' : 'rejected')
     }, { prepend: true })
@@ -26,8 +26,20 @@ export function apply(ctx) {
       const denied = await call('plan_crop_trial', { title: 'Small trial', change: 'Try peas on one strip', trialAreaHa: .5 })
       const afterDenied = ctx.farmRecords.snapshot()
       const deniedCorrection = await call('correct_year', { fieldId: 'finney-ks-126', year: 2022, crop: 'corn', whatWasWrong: 'Farmer confirms corn.' })
+      const deniedSource = await call('catalog_farmer_knowledge', { title: 'Private note', origin: 'Farmer', content: 'Current seeding rate 32000 seeds/acre.', evidence: 'farmer-reported', scope: 'Own field only' })
       allow = true
       const correction = await call('correct_year', { fieldId: 'finney-ks-126', year: 2022, crop: 'corn', whatWasWrong: 'Farmer confirms corn.' })
+      const sharedResearch = value(await call('read_farm_research'))
+      const catalog = value(await call('catalog_farmer_knowledge', { title: 'Private farmer baseline', origin: 'Farmer', content: 'Current seeding rate 32000 seeds/acre.', evidence: 'farmer-reported', scope: 'Own field only; no yield validation' }))
+      const evidence = value(await call('read_farm_source', { id: catalog.id, query: '32000' }))
+      const fieldId = value(await call('save_farm_field', { name: 'Own corn field', areaHa: 4, evidence: 'farmer-reported', reason: 'Preserve baseline and avoid the wet corner.' }))
+      const inputs = { areaHa: 4, trialAreaHa: 1, baselineSeedsPerAcre: 32000, targetPlantsPerAcre: 35000, establishmentFraction: .9, seedsPerBag: 80000, pricePerBag: 300, currency: 'CAD' }
+      const corn = value(await call('propose_corn_plan', { proposal: { fieldId, season: 2027, baselineReason: 'Preserve baseline outside the small trial.', constraints: ['Avoid the wet corner.'], inputs, assumptions: Object.keys(inputs).map(label => ({ label, evidence: 'farmer-reported' })), citations: [{ sourceId: catalog.id, locator: 'block 1' }] } }))
+      allow = false
+      const deniedCorn = await call('accept_corn_plan', { id: corn.id })
+      allow = true
+      const acceptedCorn = value(await call('accept_corn_plan', { id: corn.id }))
+      value(await call('observe_corn_plan', { id: corn.id, date: '2026-11-14', text: 'Stand not measured yet; soil condition recorded.', evidence: 'farmer-reported' }))
       const comparison = value(await call('compare_seed_quotes', { areaHa: 12, bagsPerHa: 1.5, currentCadPerBag: 120, alternativeCadPerBag: 108 }))
       const trial = value(await call('adapt_community_method', { postId: 'sample-cover-crop' }))
       value(await call('start_crop_tracking', { id: trial.id }))
@@ -37,7 +49,7 @@ export function apply(ctx) {
       value(await call('withdraw_farm_summary', { id: published.id }))
       const planned = value(await call('plan_crop_trial', { title: 'Try a little', change: 'Locally reviewed alternative', trialAreaHa: .5 }))
       const invalid = await call('plan_crop_trial', { title: 'Too much', change: 'Alternative', trialAreaHa: 20 })
-      return { names, before, denied, deniedCorrection, correction, afterDenied, comparison, preview, published, planned, invalid, final: ctx.farmRecords.snapshot(), approvalCount: approvalDetails.length }
+      return { corn, deniedCorn, acceptedCorn, sharedResearch, deniedSource, evidence, names, before, denied, deniedCorrection, correction, afterDenied, comparison, preview, published, planned, invalid, final: ctx.farmRecords.snapshot(), approvalCount: approvalDetails.length }
     } finally {
       release()
       handle.agent.session.append('turn/end', { turn: 1, reason: { kind: 'completed' } })

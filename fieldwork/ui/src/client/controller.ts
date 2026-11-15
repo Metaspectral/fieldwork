@@ -6,7 +6,7 @@ export interface Reply { state: FarmState; createdId?: string; comparison?: Farm
 /** Shared page load and mutation state. */
 export interface PageState { data: FarmState | null; busy: boolean; error: string | null; saved: boolean }
 /** Native injected callbacks and observable; the renderer supplies the hook. */
-export interface Face { hooks: { records: ReturnType<typeof createSnapshotStore<PageState>> }; section: 'farm' | 'community' | 'experiments'; refresh(): Promise<void>; perform(command: Record<string, unknown>): Promise<Reply> }
+export interface Face { hooks: { records: ReturnType<typeof createSnapshotStore<PageState>> }; section: 'farm' | 'community' | 'experiments' | 'library' | 'corn'; refresh(): Promise<void>; perform(command: Record<string, unknown>): Promise<Reply> }
 /** Own transport lifetime and publish only authoritative server snapshots. */
 export class PageController {
   readonly store = createSnapshotStore<PageState>({ data: null, busy: false, error: null, saved: false })
