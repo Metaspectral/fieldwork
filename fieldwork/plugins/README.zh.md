@@ -2,7 +2,7 @@
 
 [English](README.md) | 中文
 
-Fieldwork 扩展真正的 DeepSeek Harness 应用，在 Fieldwork 智能体预设中注册独立的 My Farm、Community、Crop Experiments 和 Seed Costs Cordis 插件，并由 Host 服务拥有私人记录。[UI 插件](../ui/README.zh.md)添加原生 My farm、Community 和 Experiments 面板。经过认证的 JSON 传输共享同一记录所有者，Harness 保留现有外壳和导航。
+Fieldwork 扩展真正的 DeepSeek Harness 应用，在 Fieldwork 智能体预设中注册独立的 My Farm、Community、Crop Experiments、Seed Costs、Risk Check、Evidence Guard 和 Trust Guide Cordis 插件，并由 Host 服务拥有私人记录和信任记录。[UI 插件](../ui/README.zh.md)添加原生 My farm、Community 和 Experiments 面板。经过认证的 JSON 传输共享同一记录所有者，Harness 保留现有外壳和导航。
 
 ## 运行
 
@@ -25,6 +25,10 @@ pnpm run fieldwork:start --no-open
 
 该预设没有 shell 或任意文件系统工具。只读操作不提示。模型请求的所有修改由 Harness 工具流水线审批，而非 `approved` 参数或模型承诺。缺少审批支持时拒绝执行。配置的模型会收到工具返回的上下文。
 
+## 信任准则
+
+Fieldwork 遵循[信任准则](TRUST.md)：先提供价值，再通过在农户能核实的事情上说对来赢得信任。Trust Guide 从不阻止任何工具。它根据农户自己选择查看和提问的内容，决定智能体主动提供多少：从只展示发生过什么，到建议一个小规模试验；农户拒绝建议后会退一步。Risk Check 针对一块田的一项改变，给出正常年份和干旱年份的 USD/acre 变化，并使用田块历史中的干旱年数。其作物表是示例数据，每个数字都会注明。经农户批准，`save_estimate` 保存一个结果，之后由 `check_estimate` 与农户的真实季节对比；准确记录会出现在之后的检查和 `agronomist_packet` 审阅文件中。Evidence Guard 标记缺少方法、范围或来源的数字（[格式](EVIDENCE.md)）。信任信号和估算保存在 `$DSH_HOME/fieldwork-native/trust.v2.json`，不会离开运行时。风险检查是只读的。保存或核对估算、写入审阅文件、恢复自动节奏和删除信任数据都需要原生审批。
+
 ## 本地记录及限制
 
 记录保存在 `$DSH_HOME/fieldwork-native/records.v1.json`，独立于已删除的原型数据。文件现为 v2 架构；有效 v1 文件在迁移前生成 `.v1.backup`。内置入门修正和田块笔记使用同一记录所有者。原始来源字节保存在相邻的 `originals` 目录。参阅[迁移指南](../../docs/upgrade-guide/v0.2.2-rc.3/fieldwork-shared-records/guide.zh.md)。每个记录文件只运行一个进程。修改串行执行，通过原子替换提交。缺失文件启动明确虚构的演示农场；无效现存文件报错而非重置。跟踪不批准农艺处理，也不安排实体农场工作。
@@ -38,7 +42,7 @@ pnpm run fieldwork:start --no-open
 ```sh
 pnpm --filter @fieldwork/plugins typecheck
 pnpm --filter @fieldwork/plugins test
-node --test fieldwork/plugins/composition.test.mjs
+node --test fieldwork/plugins/composition.test.mjs fieldwork/plugins/trust.composition.test.mjs
 ```
 
-组合测试启动真实 Harness 配置，挂载实际 Fieldwork 预设并执行原生工具。测试专用应答器先明确拒绝、再允许审批请求；测试检查拒绝不改变记录、计算确定、私人观察不进入摘要、撤回保留试验，以及作物规划保留农户基线。不模拟真实模型对话。
+组合测试启动真实 Harness 配置，挂载实际 Fieldwork 预设并执行原生工具。测试专用应答器先明确拒绝、再允许审批请求；测试检查拒绝不改变记录、计算确定、私人观察不进入摘要、撤回保留试验，以及作物规划保留农户基线。信任组合测试检查农户请求的试验从不被阻止、阶段随历史查看、提问和风险检查变化，以及已保存并核对的估算进入审阅文件。两者都不模拟真实模型对话。
