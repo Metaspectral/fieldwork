@@ -3,20 +3,14 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write fieldwork/README.md
 /fieldwork:
-  en: ab0dacdf4b433e8b
-  zh: bb62e566e7f2b993
-/fieldwork/planned-architecture:
-  en: 1e4446c33fc4407c
-  zh: 4ebb4abde3a9ef00
-/fieldwork/current-status:
-  en: 0d579d9db2cd0e32
-  zh: 56019d2632b5ce48
-/fieldwork/explore-the-mockup:
-  en: 0987dfad4f30fd7c
-  zh: cf50626ce0a88303
-/fieldwork/first-milestone:
-  en: ae09aab02894e27e
-  zh: 89eb8abd35483bb6
-/fieldwork/source-and-licensing:
-  en: b9f9d06cd09706ea
-  zh: 125fe2de494dc13e
+  en: 2fc88ad19e340ed5
+  zh: c24ab4521113ebb5
+/fieldwork/native-plugins:
+  en: 0a0a5c1f539885fd
+  zh: c1a3c01b9eeaaa74
+/fieldwork/start-here:
+  en: 2ddc545a8b4ea26d
+  zh: 968317d364a851b4
+/fieldwork/scope:
+  en: 866cfa69c44982c2
+  zh: e94a5c4ccf78bbf5

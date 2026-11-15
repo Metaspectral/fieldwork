@@ -1296,14 +1296,17 @@ importers:
         specifier: 4.6.6
         version: 4.6.6
 
-  fieldwork/poc:
+  fieldwork/plugins:
     dependencies:
       '@deepseek-ai/cordis':
         specifier: workspace:~
         version: link:../../vendor/cordis
-      '@deepseek-ai/dsh-host-webserver':
+      '@deepseek-ai/dsh-agent-preset-registry':
         specifier: workspace:*
-        version: link:../../packages/host/webserver
+        version: link:../../packages/preset/agent-preset-registry
+      '@deepseek-ai/dsh-error':
+        specifier: workspace:*
+        version: link:../../packages/util/error
       '@deepseek-ai/dsh-tools':
         specifier: workspace:*
         version: link:../../packages/core/tools

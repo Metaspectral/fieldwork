@@ -1,0 +1,16 @@
+# Bilingual-pair consistency record for guide.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write docs/upgrade-guide/v0.2.2-rc.3/native-fieldwork-plugins/guide.md
+/:
+  en: 1221e6d44b79c80d
+  zh: fab3a146f81e706d
+/native-fieldwork-plugins:
+  en: ac9842494d0e6248
+  zh: 59fe8946c27e8c09
+/native-fieldwork-plugins/change:
+  en: e77c4eb0afdb9211
+  zh: bbb102d9b452ebd7
+/native-fieldwork-plugins/migration:
+  en: d9a4b3ddae415900
+  zh: 62df601dd9257d1c

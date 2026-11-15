@@ -1,5 +1,7 @@
 # Fieldwork architecture
 
+Fieldwork extends the native DeepSeek Harness application through Cordis plugins, native tool results, approvals, and agent presets. There is no separate HTML app; see the [native plugin guide](../plugins/README.md) for the current composition.
+
 ## Product model
 
 A farmer has a current workflow shaped by experience, research, equipment, budget, and local conditions. Fieldwork preserves that workflow and its reasoning. Plugins offer additions or alternatives without requiring replacement of the existing approach.

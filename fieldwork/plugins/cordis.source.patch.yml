@@ -1,0 +1,8 @@
+# Native Harness plugins only. No custom HTTP route, HTML app, or UI replacement.
+- insert:
+    - id: fieldwork-records
+      name: './records.ts'
+      config:
+        file: !!js process.getBuiltinModule('node:path').join(process.env.DSH_HOME || process.getBuiltinModule('node:path').join(process.getBuiltinModule('node:os').homedir(), '.dsh'), 'fieldwork-native', 'records.v1.json')
+    - id: fieldwork-preset
+      name: './preset.ts'

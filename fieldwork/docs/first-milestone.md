@@ -16,7 +16,7 @@ Preserve the current supplier, product, rate, area, units, and farmer's reasonin
 4. Persist the baseline and calculation in the local workspace.
 5. Connect from a phone on the same network, reconnect, and inspect the same saved result.
 
-Choose whether to extend the existing harness UI or attach a separate frontend based on this spike. Avoid a broad UI migration before the integration works.
+Use native Harness plugins, tool cards, approvals, and preset settings. Do not build or migrate a separate HTML frontend.
 
 ## Acceptance
 
@@ -31,7 +31,7 @@ Choose whether to extend the existing harness UI or attach a separate frontend b
 
 ## Subsequent milestones
 
-- Adapt relevant mockup screens into the working application.
+- Extend the native plugins based on farmer feedback.
 - Run a versioned Sentinel-2 workflow with acquisition dates, cloud handling, source attribution, and saved outputs.
 - Add remote connectivity with pairing and revocation.
 - Publish a selected experiment summary to the opt-in community service.

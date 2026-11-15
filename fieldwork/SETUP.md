@@ -41,8 +41,6 @@ For frontend development, `pnpm run dev:web` builds artifacts and starts the dev
 
 The stock server listens locally. Same-network access requires explicit listener and HTTPS/proxy configuration; it is not enabled by these commands. Follow the upstream remote-access guide and implement the planned Fieldwork pairing and revocation flow before offering it to farmers. Do not share the raw agent endpoint publicly.
 
-## Product reference
+## Fieldwork plugins
 
-Open `fieldwork/prototype/index.html` for the standalone mockup. Its data and assistant are simulated. The mockup is not connected to the harness.
-
-See the Fieldwork README for architecture and the first milestone. Do not treat the upstream release workflows as Fieldwork deployment instructions.
+Use the [native plugin guide](plugins/README.md) to launch the Fieldwork preset. The application is the native Harness; the separate HTML mockup has been removed.

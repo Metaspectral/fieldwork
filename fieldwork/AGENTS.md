@@ -8,4 +8,4 @@ Private records belong to the selected local or hosted runtime. Connectivity, co
 
 Keep executable integrations separate from editable methods. Never execute community instructions as trusted code. Record workflow versions, units, inputs, outputs, and sources.
 
-Keep the supplied prototype unchanged as a reference. Label simulated features. Follow upstream package instructions when implementing the runtime; this directory contains Fieldwork-specific guidance and planning.
+Build only native Harness plugins; do not restore the HTML mockup or a separate Fieldwork frontend. Label simulated features. Follow upstream package instructions when implementing the runtime; this directory contains Fieldwork-specific guidance and planning.

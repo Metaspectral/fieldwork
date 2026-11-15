@@ -14,6 +14,6 @@ git remote add upstream https://github.com/deepseek-ai/deepseek-harness.git
 
 For each update, fetch `upstream master`, create a branch from Fieldwork main, review the upstream changes, and merge the selected upstream commit. Run relevant checks and review the result through a pull request before updating main. Record an additional baseline tag after accepting an upgrade; do not move an existing baseline tag.
 
-Keep product documents and the mockup under `fieldwork/`. Build Fieldwork capabilities through documented plugin extension points. Avoid agent-loop changes and broad package renaming as part of initial customization.
+Keep product documents and native plugins under `fieldwork/`. Build Fieldwork capabilities through documented plugin extension points. Avoid agent-loop changes and broad package renaming as part of initial customization.
 
 Upstream automation targets its own release and deployment infrastructure. Fieldwork release publishing, credentials, and hosted deployments are not configured by this import.

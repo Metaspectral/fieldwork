@@ -2,44 +2,30 @@
 
 English | [中文](README.zh.md)
 
-A farmer-owned workspace for preserving current practices, exploring alternatives, and learning from experiments.
+A farmer-owned workspace built as native DeepSeek Harness plugins. Start with the farmer's current approach and reasoning, compare a manageable change, and retain what was learned.
 
-Fieldwork starts with how a farmer already works and why. Plugins can capture that approach, supplement it with weather or imagery, compare costs, or help test a manageable change. Experience, observations, and research retain their sources; the farmer decides what to adopt and share.
+## Native plugins
 
-## Planned architecture
+The application is the Harness itself: its chat, tool cards, approvals, sessions, and preset settings. There is no separate Fieldwork HTML app or custom frontend.
 
-A customized [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) runtime runs on the farmer's computer. A browser interface lets them use the same workspace from their computer or phone. Experiments execute on the runtime and retain records there.
+- **My Farm:** read and update current practices and farm context.
+- **Community:** browse local demonstration knowledge, adapt methods privately, and preview selected summaries before sharing.
+- **Crop Experiments:** create small trial drafts, adapt their baseline, approve tracking, and record observations.
+- **Seed Costs:** compare purchase quotes and optionally save the calculation.
 
-Optional services provide remote connectivity, community publishing, and hosted execution for farmers who prefer cloud compute. These are separate choices. Sharing publishes selected summaries, not the private workspace.
+Each capability is a separate Cordis plugin within the Fieldwork agent preset. A Host plugin owns their shared private records. Native approval gates every mutation; a tool argument cannot grant its own approval.
 
-Local execution does not imply a local model: a cloud model receives the context sent to it. Workflows must make external data use visible.
+## Start here
 
-## Current status
-
-This repository includes the DeepSeek Harness source and history, planning material, and an interactive HTML mockup. The [plugin POC](poc/README.md) adds a working local farm workspace, crop comparisons, private experiments, and a local demonstration feed. Hosted community services and phone pairing remain future work.
-
+- [Native plugin run guide](plugins/README.md)
 - [Team setup](SETUP.md)
-- [Upstream baseline and updates](UPSTREAM.md)
-- [Architecture and decisions](docs/architecture.md)
+- [Architecture](docs/architecture.md)
 - [First milestone](docs/first-milestone.md)
-- [Interactive mockup](prototype/index.html)
-- [Original product handoff](docs/reference/Fieldwork_Handoff.docx)
+- [Upstream baseline](UPSTREAM.md)
 - [Contributing](CONTRIBUTING.md)
 
-## Explore the mockup
+## Scope
 
-Open `prototype/index.html` in a browser. It is self-contained and requires no API keys or build step. Browser behavior for local files may vary.
+Community is a local demonstration feed, not an online social service. There is no live weather, satellite pipeline, hosted execution, or phone pairing yet. The native composition is checked without a model API call; model quality and real-provider behavior remain unverified. A cloud model receives the context sent to it.
 
-The assistant, community, weather, and satellite features are simulated. Demo state is stored in browser localStorage; there are no accounts or real audience controls. Use fictional records. Workspace exports contain private demo state.
-
-Preserve the warm paper, charcoal, and clay visual direction, compact surfaces, and five tabs: Today, Community, Plug-ins, Experiments, and My farm.
-
-## First milestone
-
-Save a farmer's current seed-purchasing approach, compare another quote using a deterministic plugin, and save the result through a real agent. Open the same workspace from a phone on the same network and confirm records survive reconnection.
-
-Later milestones add remote access, a reproducible Sentinel-2 workflow, selective community publication, and optional hosted execution.
-
-## Source and licensing
-
-The supplied mockup and handoff are preserved unchanged. The handoff predates the local-runtime decision; the architecture document records the current direction. DeepSeek Harness is imported at the baseline tag recorded in UPSTREAM.md, with its MIT license and third-party notices preserved at the repository root. The license for Fieldwork's original code and social services remains a team decision before public release.
+The abandoned mockup and separate `/fieldwork` app have been removed. The original handoff remains historical context in Git; its interface recommendations do not control the native plugin implementation. Preserve upstream licensing and third-party notices when customizing the harness.
