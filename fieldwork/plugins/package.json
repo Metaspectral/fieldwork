@@ -5,13 +5,14 @@
   "type": "module",
   "description": "Native DeepSeek Harness plugins for farmer-owned context and empirical crop experiments.",
   "scripts": {
-    "test": "node --import tsx/esm --test records.test.ts onboarding-progress.test.ts",
+    "test": "node --import tsx/esm --test records.test.ts onboarding-progress.test.ts trust.test.ts",
     "typecheck": "tsc -p tsconfig.json"
   },
   "dependencies": {
     "@deepseek-ai/cordis": "workspace:~",
     "@deepseek-ai/schemastery": "workspace:~",
     "@deepseek-ai/dsh-agent-preset-registry": "workspace:*",
+    "@deepseek-ai/dsh-system-prompt": "workspace:*",
     "@deepseek-ai/dsh-tools": "workspace:*",
     "@deepseek-ai/dsh-error": "workspace:*",
     "zod": "4.6.6",
