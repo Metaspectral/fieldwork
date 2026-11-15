@@ -7,7 +7,7 @@ Use Git, Node.js 24.9 or newer, and Corepack. The root package.json pins pnpm 11
 ## Install and build
 
 ```sh
-git clone https://github.com/DTavaszi/fieldwork.git
+git clone https://github.com/Metaspectral/fieldwork.git
 cd fieldwork
 corepack enable
 pnpm install --frozen-lockfile
