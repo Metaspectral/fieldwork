@@ -8,7 +8,7 @@ export interface FieldSelection { fieldId: string | null; season: number | null;
 /** Shared page load and mutation state. */
 export interface PageState { selection: FieldSelection; data: FarmState | null; learning: LearningSnapshot | null; busy: boolean; error: string | null; saved: boolean }
 /** Native injected callbacks and observable; the renderer supplies the hook. */
-export interface Face { hooks: { records: ReturnType<typeof createSnapshotStore<PageState>> }; section: 'farm' | 'community' | 'experiments' | 'library' | 'corn' | 'learning'; selectContext(value: Partial<FieldSelection>): void; navigate(section: Face['section']): void; refresh(): Promise<void>; perform(command: Record<string, unknown>): Promise<Reply> }
+export interface Face { hooks: { records: ReturnType<typeof createSnapshotStore<PageState>> }; section: 'farm' | 'community' | 'experiments' | 'library' | 'corn' | 'rotation' | 'learning'; selectContext(value: Partial<FieldSelection>): void; navigate(section: Face['section']): void; refresh(): Promise<void>; perform(command: Record<string, unknown>): Promise<Reply> }
 /** Own transport lifetime and publish only authoritative server snapshots. */
 export class PageController {
   readonly store = createSnapshotStore<PageState>({ selection: { fieldId: null, season: null, investigationId: null }, data: null, learning: null, busy: false, error: null, saved: false })

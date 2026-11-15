@@ -8,7 +8,7 @@ Corn is the first crop workflow. The underlying farm context, evidence, plans, a
 
 ## Native plugins
 
-The application is the Harness itself: its chat, tool cards, approvals, sessions, and preset settings. My farm, Community, Experiments, Source library, Corn planning, and Field learning are native main panels registered by the [UI plugin](ui/README.md), alongside the existing chat and navigation.
+The application is the Harness itself: its chat, tool cards, approvals, sessions, and preset settings. My farm, Community, Experiments, Source library, Corn planning, Rotation, and Field learning are native main panels registered by the [UI plugin](ui/README.md), alongside the existing chat and navigation.
 
 - **Farm setup:** built-in onboarding after model selection, with pause, resume, and explicit completion. See the [onboarding guide](onboarding/README.md).
 - **My Farm:** read and update current practices and farm context.
@@ -17,6 +17,7 @@ The application is the Harness itself: its chat, tool cards, approvals, sessions
 - **Field learning:** discover file-backed methods, check Sentinel-2 availability weekly, investigate observations, and retain reviewed corn comparisons. See the [method guide](methods/README.md).
 - **Source library:** retain original spreadsheets, PDFs, saved web pages, public HTTPS snapshots, and farmer notes with exact citations.
 - **Corn planning:** preserve the baseline, compare a partial-field seeding trial, review a versioned budget, and retain observations. See the [method and evidence limits](docs/corn-method.md).
+- **Rotation:** see each field's grown and planned crops, compare the current rotation with a cited regional rotation using the farmer's own numbers, and review a versioned plan. See the [method and limits](docs/rotation-method.md).
 - **Seed Costs:** compare purchase quotes and optionally save the calculation.
 
 Each capability is a separate Cordis plugin within the Fieldwork agent preset. A Host plugin owns their shared private records. Native approval gates every model-requested mutation; a tool argument cannot grant its own approval. Page actions show a review dialog before the owner saves.

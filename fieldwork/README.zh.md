@@ -8,7 +8,7 @@
 
 ## 原生插件
 
-应用就是 Harness 本身，使用其聊天、工具卡片、审批、会话和预设设置。[UI 插件](ui/README.zh.md)在现有聊天和导航旁注册原生 My farm、Community、Experiments、Source library、Corn planning 和 Field learning 主面板。
+应用就是 Harness 本身，使用其聊天、工具卡片、审批、会话和预设设置。[UI 插件](ui/README.zh.md)在现有聊天和导航旁注册原生 My farm、Community、Experiments、Source library、Corn planning、Rotation 和 Field learning 主面板。
 
 - **Farm setup：**选择模型后自动开始的内置入门流程，可暂停、继续及明确结束。参见[入门指南](onboarding/README.zh.md)。
 - **My Farm：**读取和更新当前做法及农场背景。
@@ -17,6 +17,7 @@
 - **Field learning：**发现文件化方法，每周检查 Sentinel-2 数据可用性，调查观察并保留已审核的玉米比较。参阅[方法指南](methods/README.zh.md)。
 - **Source library：**保留原始表格、PDF、网页、公开 HTTPS 快照和农户笔记，并提供准确引用。
 - **Corn planning：**保留原做法，比较部分田块播种试验，审核带版本的预算并记录观察。参阅[方法及证据边界](docs/corn-method.md)。
+- **Rotation：**查看每块田已种和计划的作物，用农户自己的数值将现行轮作与带引用的地区轮作比较，并审核带版本的计划。参阅[方法及局限](docs/rotation-method.md)。
 - **Seed Costs：**比较采购报价，并可选择保存计算。
 
 每项能力都是 Fieldwork 智能体预设中的独立 Cordis 插件。一个 Host 插件拥有共享的私人记录。模型请求的所有修改均经过原生审批；工具参数不能自行授予批准。页面操作在所有者保存前显示审查对话框。

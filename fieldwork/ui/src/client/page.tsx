@@ -47,6 +47,7 @@ export function Page(props: Props): ReactNode {
     {props.section === 'farm' && f && <>
       <FieldContext fields={state.data.fields} t={t} action={<Button onClick={() => props.navigate('corn')}>{t('addField')}</Button>} />
       <section className={css.card}><h2>{f.name}</h2><p>{f.region} · {f.areaHa} ha · {f.crop}</p><h3>{t('baseline')}</h3><p>{f.approach}</p><h3>{t('reason')}</h3><p>{f.reason}</p><Button onClick={() => props.navigate('learning')}>{t('newInvestigation')}</Button></section>
+      <section className={css.card}><h2>{t('rotation')}</h2><p>{t('rotationFarmLine')}</p><Button onClick={() => props.navigate('rotation')}>{t('openRotation')}</Button></section>
       <details><summary>{t('editFarmContext')}</summary>
       <form key={f.name + f.region + f.areaHa + f.approach + f.reason + f.crop} className={css.card} onSubmit={e => { const v = values(e); ask({ action: 'farm', farm: { ...v, areaHa: Number(v.areaHa) } }, t('saveFarm'), Object.entries(v).map(([k, v]) => [labels[k] ?? k, v])) }}>
         <h2>{t('baseline')}</h2><div className={css.grid}>{input('name', t('name'), f.name)}{input('region', t('region'), f.region)}{input('areaHa', t('area'), f.areaHa, 'number', { min: .01, max: 100000, step: 'any' })}{input('crop', t('crop'), f.crop)}</div>{text('approach', t('baseline'), f.approach)}{text('reason', t('reason'), f.reason)}<Button type="submit" variant="primary" disabled={state.busy}>{t('saveFarm')}</Button>

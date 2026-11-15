@@ -27,7 +27,7 @@ pnpm run fieldwork:start --no-open
 
 ## 本地记录及限制
 
-记录保存在 `$DSH_HOME/fieldwork-native/records.v1.json`，独立于已删除的原型数据。文件现为 v2 架构；有效 v1 文件在迁移前生成 `.v1.backup`。内置入门修正和田块笔记使用同一记录所有者。原始来源字节保存在相邻的 `originals` 目录。参阅[迁移指南](../../docs/upgrade-guide/v0.2.2-rc.3/fieldwork-shared-records/guide.zh.md)。每个记录文件只运行一个进程。修改串行执行，通过原子替换提交。缺失文件启动明确虚构的演示农场；无效现存文件报错而非重置。跟踪不批准农艺处理，也不安排实体农场工作。
+记录保存在 `$DSH_HOME/fieldwork-native/records.v1.json`，独立于已删除的原型数据。文件现为 v3 架构，新增轮作计划；有效 v1 和 v2 文件在迁移前生成 `.v1.backup` 或 `.v2.backup`。内置入门修正和田块笔记使用同一记录所有者。原始来源字节保存在相邻的 `originals` 目录。参阅 [v2](../../docs/upgrade-guide/v0.2.2-rc.3/fieldwork-shared-records/guide.zh.md) 和 [v3](../../docs/upgrade-guide/v0.2.2-rc.3/fieldwork-rotation-plans/guide.zh.md) 迁移指南。每个记录文件只运行一个进程。修改串行执行，通过原子替换提交。缺失文件启动明确虚构的演示农场；无效现存文件报错而非重置。跟踪不批准农艺处理，也不安排实体农场工作。
 
 社区是访问同一所有者运行时的设备之间共享的本地动态。没有在线受众、实时天气、Sentinel-2 执行、托管运行或手机配对。预览文本不会自动匿名化。摘要不附加原始观察或农场记录对象，但包含选定标题、心得、基线、改变、作者和方法来源；复制的方法文本可能含有农场详情，需要审查。已审查预览不可变，在重启或达到内存预览数量上限时过期。
 

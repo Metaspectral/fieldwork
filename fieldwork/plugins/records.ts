@@ -9,6 +9,7 @@ import schema from '@deepseek-ai/schemastery'
 import { HarnessError } from '@deepseek-ai/dsh-error'
 
 import { fieldSchema, sourceSchema, cornPlanSchema } from './domain.ts'
+import { rotationPlanSchema } from './rotation-domain.ts'
 
 const text = z.string().trim().min(1).max(2000)
 /** Farmer-confirmed current practice and reasoning, with explicit area units. */
@@ -16,7 +17,8 @@ export const farmSchema = z.object({ name: text, region: text, areaHa: z.number(
 const trialSchema = z.object({ id: text, title: text, baseline: text, change: text, source: text, status: z.enum(['draft', 'tracking']), observations: z.array(text) })
 const summarySchema = z.object({ id: text, title: text, baseline: text, change: text, takeaway: text, source: text, author: text, sample: z.boolean() })
 const legacySchema = z.object({ version: z.literal(1), farm: farmSchema, trials: z.array(trialSchema), summaries: z.array(summarySchema), comparisons: z.array(z.object({ id: text, pluginVersion: z.literal(1), areaHa: z.number(), bagsPerHa: z.number(), currentCadPerBag: z.number(), alternativeCadPerBag: z.number(), currentCad: z.number(), alternativeCad: z.number(), savingCad: z.number() })) })
-const stateSchema = legacySchema.extend({ version: z.literal(2), fields: z.array(fieldSchema), sources: z.array(sourceSchema), cornPlans: z.array(cornPlanSchema) })
+const secondSchema = legacySchema.extend({ version: z.literal(2), fields: z.array(fieldSchema), sources: z.array(sourceSchema), cornPlans: z.array(cornPlanSchema) })
+const stateSchema = secondSchema.extend({ version: z.literal(3), rotationPlans: z.array(rotationPlanSchema) })
 /** Private durable record format; community summaries are separate objects. */
 export type FarmState = z.infer<typeof stateSchema>
 /** Exact selected content reviewed before publication. */
@@ -27,7 +29,7 @@ export class FarmError extends HarnessError {
   constructor(message: string, code: 'FARM_INPUT' | 'FARM_STORAGE', cause?: unknown) { super(message, code, cause === undefined ? undefined : { cause }); this.name = 'FarmError' }
 }
 function demo(): FarmState {
-  return { version: 2, fields: [], sources: [], cornPlans: [], farm: { name: 'Alder Creek · fictional demo', region: 'Fraser Valley', areaHa: 12, crop: 'Spring barley', approach: 'Keep barley on the main area and try changes on a small strip.', reason: 'The lower field stays wet longer; soil workability matters more than a fixed planting date.' }, trials: [], comparisons: [], summaries: [
+  return { version: 3, fields: [], sources: [], cornPlans: [], rotationPlans: [], farm: { name: 'Alder Creek · fictional demo', region: 'Fraser Valley', areaHa: 12, crop: 'Spring barley', approach: 'Keep barley on the main area and try changes on a small strip.', reason: 'The lower field stays wet longer; soil workability matters more than a fixed planting date.' }, trials: [], comparisons: [], summaries: [
     { id: 'sample-cover-crop', title: 'Start with a small cover-crop strip', baseline: 'Our usual post-harvest fallow strip', change: 'A locally reviewed cover-crop mix on one neighbouring strip', takeaway: 'One season was inconclusive. Next time record soil conditions and establishment.', source: 'Fictional demonstration method v1', author: 'Maya · fictional grower', sample: true },
     { id: 'sample-field-notes', title: 'Record why you waited to plant', baseline: 'Plant within the usual calendar window', change: 'Record soil workability and the reason for waiting', takeaway: 'Farmer knowledge helps interpret next season. This is not a controlled yield comparison.', source: 'Fictional demonstration knowledge v1', author: 'Jonah · fictional grower', sample: true },
   ] }
@@ -48,14 +50,15 @@ export class FarmRecords {
     }
     try {
       const raw = JSON.parse(original)
-      if (raw?.version === 1) {
-        const legacy = legacySchema.parse(raw)
-        try { copyFileSync(file, `${file}.v1.backup`, constants.COPYFILE_EXCL) }
+      if (raw?.version === 1 || raw?.version === 2) {
+        const generation = raw.version as 1 | 2
+        const earlier = generation === 1 ? { ...legacySchema.parse(raw), fields: [], sources: [], cornPlans: [] } : secondSchema.parse(raw)
+        try { copyFileSync(file, `${file}.v${generation}.backup`, constants.COPYFILE_EXCL) }
         catch (error) {
           if (!(error instanceof Error && 'code' in error && error.code === 'EEXIST')) throw error
-          if (readFileSync(`${file}.v1.backup`, 'utf8') !== original) throw new Error('A different v1 migration backup already exists; preserve both files before migrating.')
+          if (readFileSync(`${file}.v${generation}.backup`, 'utf8') !== original) throw new Error(`A different v${generation} migration backup already exists; preserve both files before migrating.`)
         }
-        return new FarmRecords(file, stateSchema.parse({ ...legacy, version: 2, fields: [], sources: [], cornPlans: [] }))
+        return new FarmRecords(file, stateSchema.parse({ ...earlier, version: 3, rotationPlans: [] }))
       }
       return new FarmRecords(file, stateSchema.parse(raw))
     } catch (error) { throw new FarmError('Could not open farm records; the existing file has been preserved.', 'FARM_STORAGE', error) }
