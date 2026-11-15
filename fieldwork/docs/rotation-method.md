@@ -33,6 +33,8 @@ A plan stores the field, season, revision, both crop orders with their sources, 
 
 A field's rotation and planned crop come from its most recently accepted plan. A planned crop is never written into the grown-crop history. Acceptance is refused when a compared plan has a missing number, when the field area changed after the proposal, or when demo numbers sit on a field that is not a demo field.
 
+The Rotation page has three cards. Rotation plan lists each field with its three most recent recorded seasons and the next four seasons from its plan; crops from a plan that is proposed but not accepted are drawn with a dashed outline. Past seasons and risk lists, for each crop in a field's plan or history, how many recorded seasons grew it, how many of those had unusual weather, and in how many of those crop growth was below usual. These are counts from the NASA data saved on My farm, not a forecast of yield, and they change no plan. Plans and budgets lists every saved plan with its decision, profit difference per acre and status, and opens the full budget on request.
+
 Page actions show a review dialog before saving. The model tools `propose_rotation_plan` and `accept_rotation_plan` require native approval; `list_regional_rotations` and `read_rotation_plans` only read.
 
 ## Brookings example and farm map
@@ -43,7 +45,7 @@ The farm map on My farm draws every field that has an outline or a point and lab
 
 ## Verification
 
-Domain tests cover the six cited library entries, rejection of an entry without a source, the budget arithmetic on invented inputs, a missing number, the acceptance checks, the fictional example, the Brookings example, field locations, picture placement and saving, and migration from schema version 2 with its backup. A browser test loads the fictional example, accepts it, adds a field, records a past crop, compares two rotations, reviews and accepts the plan, and checks the table.
+Domain tests cover the six cited library entries, rejection of an entry without a source, the budget arithmetic on invented inputs, a missing number, the acceptance checks, the fictional example, the Brookings example, field locations, picture placement and saving, and migration from schema version 2 with its backup. A browser test loads the fictional example, accepts it, adds a field, records a past crop, compares two rotations, reviews and accepts the plan, and checks the plan table, the saved plans and the past seasons card.
 
 These checks validate software mechanics and the stated limits. A rotation decision still requires locally applicable evidence and farmer judgment.
 

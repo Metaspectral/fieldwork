@@ -1,4 +1,4 @@
-/** Native end-to-end: load the fictional rotation example, accept it, then compare rotations on an own field, load the Brookings example and see it on the farm map, the fields table and field conditions. */
+/** Native end-to-end: load the fictional rotation example, see its proposed plan four seasons ahead, accept it, then plan a rotation on an own field, load the Brookings example and see it on the farm map, the fields table and field conditions. */
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { fork } from 'node:child_process'
@@ -8,7 +8,7 @@ import { tmpdir } from 'node:os'
 import { basename, join, resolve } from 'node:path'
 const root = resolve(import.meta.dirname, '../..')
 const { chromium } = createRequire(join(root, 'apps/web/package.json'))('playwright')
-test('rotation table, compare dialog and plan acceptance complete a native farmer workflow', { timeout: 120000 }, async () => {
+test('rotation plan table, plan dialog and plan acceptance complete a native farmer workflow', { timeout: 120000 }, async () => {
   const home = await mkdtemp(join(tmpdir(), 'fieldwork-rotation-ui-'))
   const artifactDir = process.env.FIELDWORK_ROTATION_SHOTS ?? join(root, '.artifacts/rotation-pages', basename(home))
   const server = fork(join(root, 'apps/cli/src/bin.ts'), ['--profile', 'web', '--patch', 'fieldwork/plugins/cordis.source.patch.yml', '--no-open', '--port', '0'], { cwd: root, execArgv: ['--import', 'tsx/esm'], env: { ...process.env, DSH_HOME: home, DSH_TELEMETRY_DISABLED: '1' }, silent: true })
@@ -38,18 +38,30 @@ test('rotation table, compare dialog and plan acceptance complete a native farme
     assert.equal((await snapshot()).state.rotationPlans.length, 0, 'review does not load the example')
     await confirm()
     const season = new Date().getUTCFullYear() + 1
-    const home160 = page.getByRole('row', { name: /Home quarter · fictional demo/ })
-    await home160.getByText('Not set', { exact: true }).waitFor()
-    assert.match(await home160.innerText(), /160\s+Corn\s+Soybean\s+Corn\s+—/)
-    await page.getByText('Difference (compared minus current)', { exact: true }).waitFor()
+    const planCard = page.getByRole('region', { name: 'Rotation plan', exact: true }), plansCard = page.getByRole('region', { name: 'Plans and budgets', exact: true })
+    const home160 = planCard.getByRole('row', { name: /Home quarter/ })
+    // A plan that is not accepted is drawn four seasons ahead with dashed crops and says so.
+    await home160.getByText('Proposed · Published study', { exact: true }).waitFor()
+    assert.match(await home160.innerText(), /160\s+Corn\s+Soybean\s+Corn\s+Soybean\s+Corn\s+Soybean\s+Corn\s+Corn–soybean/)
+    assert.deepEqual(await planCard.getByRole('columnheader').allInnerTexts().then(all => all.slice(4, 11)), [season - 3, season - 2, season - 1, season, season + 1, season + 2, season + 3].map(String))
+    assert.equal(await home160.locator('[data-proposed]').count(), 4)
+    // A proposed plan opens with its budget; the table row carries the decision and the difference per acre.
+    await plansCard.getByText('Difference (compared minus current)', { exact: true }).waitFor()
+    assert.match(await plansCard.getByRole('row', { name: /Home quarter/ }).first().innerText(), /-\$36\.00\s+Proposed/)
     await shot('2-example-proposed.png')
-    await page.getByRole('button', { name: 'Review and accept', exact: true }).click()
+    await plansCard.getByRole('button', { name: /^Review and accept/ }).click()
     await shot('3-review-accept.png')
     await confirm()
     let state = (await snapshot()).state
     assert.equal(state.rotationPlans[0].status, 'accepted')
     assert.deepEqual(state.rotationPlans[0].calculation.difference, { perAcre: -36, wholeField: -5760 })
-    assert.match(await home160.innerText(), /Corn\s+Soybean\s+Corn\s+Soybean\s+Corn–soybean\s+Published study/)
+    assert.match(await home160.innerText(), /160\s+Corn\s+Soybean\s+Corn\s+Soybean\s+Corn\s+Soybean\s+Corn\s+Corn–soybean\s+Accepted · Published study/)
+    assert.equal(await home160.locator('[data-proposed]').count(), 0)
+    // An accepted plan is one table row; its budget opens on request.
+    assert.equal(await plansCard.getByText('Difference (compared minus current)', { exact: true }).count(), 0)
+    await plansCard.getByRole('button', { name: /^Details/ }).click()
+    await plansCard.getByText('Difference (compared minus current)', { exact: true }).waitFor()
+    await plansCard.getByRole('button', { name: /^Hide details/ }).click()
     await shot('4-example-accepted.png')
 
     await page.getByRole('button', { name: 'Add a field', exact: true }).click()
@@ -57,15 +69,16 @@ test('rotation table, compare dialog and plan acceptance complete a native farme
     await page.getByLabel('Area (acres)', { exact: true }).fill('100')
     await page.getByRole('dialog').getByRole('button', { name: 'Review', exact: true }).click()
     await confirm()
-    const river = page.getByRole('row', { name: /River field/ })
-    await river.getByRole('button', { name: 'Edit crops', exact: true }).click()
+    const river = planCard.getByRole('row', { name: /River field/ })
+    await planCard.getByRole('button', { name: 'Edit crops', exact: true }).click()
+    await page.getByRole('dialog').getByLabel('Field name', { exact: true }).selectOption({ label: 'River field' })
     await page.getByLabel(String(season - 1), { exact: true }).selectOption({ label: 'Corn' })
     await page.getByRole('dialog').getByRole('button', { name: 'Review', exact: true }).click()
     await confirm()
     state = (await snapshot()).state
     assert.equal(state.fields.find(f => f.name === 'River field').years[season - 1].crop, 'corn')
 
-    await river.getByRole('button', { name: 'Compare rotations', exact: true }).click()
+    await river.getByRole('button', { name: 'Plan rotation · River field', exact: true }).click()
     const dialog = page.getByRole('dialog')
     const options = await dialog.getByLabel('Rotation you run now', { exact: true }).locator('optgroup').first().locator('option').allInnerTexts()
     assert.equal(options.length, 6, 'all six study rotations are offered')
@@ -89,7 +102,7 @@ test('rotation table, compare dialog and plan acceptance complete a native farme
     await shot('6-review-proposal.png')
     assert.equal((await snapshot()).state.rotationPlans.length, 1, 'review does not save')
     await confirm()
-    await page.getByRole('button', { name: 'Review and accept', exact: true }).click()
+    await plansCard.getByRole('button', { name: /^Review and accept/ }).click()
     await confirm()
     state = (await snapshot()).state
     const plan = state.rotationPlans.find(p => p.fieldId === state.fields.find(f => f.name === 'River field').id)
@@ -97,14 +110,19 @@ test('rotation table, compare dialog and plan acceptance complete a native farme
     assert.equal(plan.calculation.current.perAcre, 42.5); assert.equal(plan.calculation.alternative.perAcre, 6.5)
     assert.equal(plan.calculation.current.wholeField, 4250)
     assert.equal(plan.inputs.current.source.doi, '10.1002/agj2.21688')
-    assert.match(await river.innerText(), /100\s+—\s+—\s+Corn\s+Soybean\s+Corn–soybean/)
+    assert.match(await river.innerText(), /100\s+—\s+—\s+Corn\s+Soybean\s+Corn\s+Soybean\s+Corn\s+Corn–soybean\s+Accepted · Published study/)
     await page.setViewportSize({ width: 1440, height: 2300 })
     await shot('7-own-field-accepted.png')
     await page.getByRole('button', { name: 'Load the Brookings example', exact: true }).click()
     await page.getByText(/Nobody has confirmed them as their fields/).waitFor()
     assert.equal((await snapshot()).state.fields.length, 4, 'review does not load the example')
     await confirm()
-    await page.getByRole('row', { name: /West strip · Brookings example/ }).getByText('Soybean', { exact: true }).first().waitFor()
+    await planCard.getByRole('row', { name: /West strip/ }).getByText('Soybean', { exact: true }).first().waitFor()
+    // Past seasons and risk lists every shown field; one with nothing saved offers to get its data.
+    const risk = page.getByRole('region', { name: 'Past seasons and risk', exact: true })
+    await risk.getByRole('columnheader', { name: 'Unusual seasons', exact: true }).waitFor()
+    await risk.getByRole('button', { name: 'Get NASA data · West strip · Brookings example', exact: true }).waitFor()
+    assert.equal(await risk.locator('tbody').count(), 7)
     assert.equal(await page.getByRole('button', { name: 'Load the Brookings example', exact: true }).count(), 0, 'the example loads once')
     state = (await snapshot()).state
     assert.deepEqual(state.fields.slice(4).map(f => f.geometry.type), ['Polygon', 'Polygon', 'Polygon'])

@@ -1,4 +1,4 @@
-/** NASA checks for rotation plans: one action per field, a dialog with odds from past seasons and the field's own record. Drawn only when the plugin is installed. */
+/** NASA checks for rotation plans: the page's shared request state and a dialog with odds from past seasons and the field's own record. Drawn only when the plugin is installed. */
 import { useEffect, useState, useSyncExternalStore, type ReactNode } from 'react'
 import { Button, Modal } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { FarmState } from '../../../plugins/records.ts'
@@ -74,18 +74,6 @@ export function NasaChecksCard({ fields, t }: { fields: FarmState['fields']; t: 
     {action(NASA_TEST_OUTLINE, { demo: true }, t('nasaTestOutline'))}
     <NasaCheckDialog check={s.open} onClose={() => s.setOpen(null)} t={t} />
   </section>
-}
-
-/** The "NASA checks" action in a Rotation table row; not drawn when the plugin is absent. */
-export function NasaChecksAction({ fieldId, t }: { fieldId: string; t: T }): ReactNode {
-  const s = useNasaChecks()
-  if (s.status === null || s.status === 'absent') return null
-  const last = s.status.checks.find(c => c.fieldId === fieldId)
-  return <>
-    <Button variant="outline" disabled={s.running !== null} onClick={() => last ? s.setOpen(last) : void s.run({ fieldId }, fieldId)}>{s.running === fieldId ? t('nasaRunning') : t('nasaChecks')}</Button>
-    {s.error !== null && s.errorFor === fieldId && <span role="alert" className={css.error}>{s.error || t('conditionsFailed')}</span>}
-    <NasaCheckDialog check={s.open?.fieldId === fieldId ? s.open : null} onClose={() => s.setOpen(null)} t={t} onRerun={() => void s.run({ fieldId }, fieldId)} />
-  </>
 }
 
 function OddsRow({ label, odds, t }: { label: string; odds: FlagOdds; t: T }): ReactNode {

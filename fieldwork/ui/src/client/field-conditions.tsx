@@ -45,7 +45,7 @@ export function FieldConditions({ fields, selectedId, t }: { fields: FarmState['
   const groups: Group[] = (selected ? [selected] : fields).map(f => ({ id: f.id, label: f.name, check: saved(f.id), can: canCheck(f), point: fieldLocation(f.geometry)?.kind === 'point', test: false }))
   // With no field that can be read, the hand-drawn test outline shows what the tables look like.
   if (!fields.some(canCheck)) groups.push({ id: NASA_TEST_OUTLINE, label: t('nasaTestOutline'), check: saved(NASA_TEST_OUTLINE), can: true, point: false, test: true })
-  // This card owns the dialog and the error for the farm's fields and the test outline; a Rotation row owns its own.
+  // This card owns the dialog and the error for the farm's fields and the test outline.
   const mine = (fieldId: string | null | undefined) => fieldId === NASA_TEST_OUTLINE || fields.some(f => f.id === fieldId)
   const body = (fieldId: string) => fieldId === NASA_TEST_OUTLINE ? { demo: true as const } : { fieldId }
   const get = (g: Group, size: 'sm' | 'md' = 'sm') => {

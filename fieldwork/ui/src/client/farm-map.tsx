@@ -5,7 +5,7 @@ import { fieldLabelPoint, fieldLocation, pictureProjection, type FarmPicture } f
 import type { FarmState } from '../../../plugins/records.ts'
 import { brookingsSource, shortYearNote } from '../../../plugins/rotation-domain.ts'
 import type { FieldworkKey } from './locales.ts'
-import { cropLabel } from './rotation.tsx'
+import { cropLabel } from './fields.tsx'
 import css from './page.module.css'
 const plainWidth = 960, plainPadding = 60
 /** Labels are laid out on a grid this wide whatever the picture's pixel size, so their text is the same size with and without a picture. */
