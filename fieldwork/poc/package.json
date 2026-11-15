@@ -1,0 +1,14 @@
+{
+  "name": "@fieldwork/poc",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": { "typecheck": "tsc -p tsconfig.json", "test": "node --import tsx/esm --test domain.test.ts" },
+  "dependencies": {
+    "@deepseek-ai/cordis": "workspace:~",
+    "@deepseek-ai/schemastery": "workspace:~",
+    "@deepseek-ai/dsh-host-webserver": "workspace:*",
+    "@deepseek-ai/dsh-tools": "workspace:*",
+    "zod": "4.6.6"
+  }
+}

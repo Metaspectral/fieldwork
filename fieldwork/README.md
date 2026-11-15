@@ -16,7 +16,7 @@ Local execution does not imply a local model: a cloud model receives the context
 
 ## Current status
 
-This repository includes the DeepSeek Harness source and history, planning material, and an interactive HTML mockup. The upstream agent runtime is the development foundation; Fieldwork tools, its custom interface, experiment storage, and community service are not implemented yet.
+This repository includes the DeepSeek Harness source and history, planning material, and an interactive HTML mockup. The [plugin POC](poc/README.md) adds a working local farm workspace, crop comparisons, private experiments, and a local demonstration feed. Hosted community services and phone pairing remain future work.
 
 - [Team setup](SETUP.md)
 - [Upstream baseline and updates](UPSTREAM.md)

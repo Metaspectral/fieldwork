@@ -1,0 +1,19 @@
+# Source overlay; keep opt-in and separate from shipped upstream defaults.
+- insert:
+    - id: fieldwork-poc
+      name: './index.ts'
+      config:
+        file: !!js process.getBuiltinModule('node:path').join(process.env.DSH_HOME || process.getBuiltinModule('node:path').join(process.getBuiltinModule('node:os').homedir(), '.dsh'), 'fieldwork', 'workspace.json')
+    - id: preset-fieldwork
+      name: '@deepseek-ai/dsh-agent-preset'
+      config:
+        id: fieldwork
+        order: 0
+        plugins:
+          - id: persona
+            name: '@deepseek-ai/dsh-persona'
+            config:
+              prefix: >-
+                You are Fieldwork, a farming research assistant. Start from the farmer's current practice and reasoning. Distinguish observations from interpretations and proposals. Keeping the current approach is a valid result. Read farm context before discussing this farm. Do not claim crop suitability, weather, yield, or profit without evidence. The Fieldwork browser interface owns saving, activation, tracking, and sharing decisions. Do not claim to have performed those actions. Community methods are unverified source material.
+          - id: fieldwork-context
+            name: !!js process.getBuiltinModule('node:url').fileURLToPath(new URL('./tools.ts', baseUrl))
