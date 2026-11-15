@@ -1,0 +1,4 @@
+# Applied when a profile installs this package (dsh plugin add).
+- insert:
+    - id: fieldwork-onboarding
+      name: fieldwork-onboarding
