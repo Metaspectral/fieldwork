@@ -85,6 +85,7 @@ export class FarmRecords {
   /** Retain immutable original bytes before publishing their catalog entry. */
   async importSource(bytes: Uint8Array, input: import('./sources.ts').SourceInput) {
     const { extractSource } = await import('./sources.ts')
+    if (input.fieldId && !this.state.fields.some(f => f.id === input.fieldId)) throw new FarmError('Select an existing field for this source.', 'FARM_INPUT')
     let source: z.infer<typeof sourceSchema>
     try { source = await extractSource(bytes, input) }
     catch (error) { if (error instanceof FarmError || error instanceof z.ZodError) throw error; throw new FarmError('Could not read this original document; check the format or import a readable copy.', 'FARM_INPUT', error) }

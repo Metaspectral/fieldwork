@@ -115,3 +115,10 @@ test('private and credentialed URL captures are rejected before an HTTP request'
   await assert.rejects(captureUrl('https://127.0.0.1/'), /publicly reachable/)
   await assert.rejects(captureUrl('https://169.254.169.254/'), /publicly reachable/)
 })
+
+test('map originals retain safe image identity and reject disguised executable content', async () => {
+  const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jVBkAAAAASUVORK5CYII=', 'base64')
+  const image = await extractSource(png, { ...metadata, filename: 'yield-map.png', season: 2014 })
+  assert.equal(image.mediaType, 'image/png'); assert.equal(image.season, 2014); assert.equal(image.sections[0]!.locator, 'image')
+  await assert.rejects(extractSource(Buffer.from('<script>alert(1)</script>'), { ...metadata, filename: 'map.jpg' }), /matching original bytes/)
+})

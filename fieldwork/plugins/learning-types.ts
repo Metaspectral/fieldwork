@@ -1,5 +1,6 @@
 /** Client-safe persisted values for file-backed learning methods and field monitoring. */
 import { z } from 'zod'
+import type { Investigation } from './investigation-types.ts'
 const text = z.string().trim().min(1).max(4000)
 const point = z.tuple([z.number().min(-180).max(180), z.number().min(-80).max(84)])
 /** First monitor supports a single polygon ring, in longitude/latitude order. */
@@ -25,7 +26,7 @@ export function readFieldBoundary(value: unknown) {
   return parsed.type === 'Polygon' ? parsed : parsed.type === 'Feature' ? parsed.geometry : parsed.features[0].geometry
 }
 export type Boundary = z.infer<typeof boundarySchema>
-export const methodIds = ['watch-field', 'scout-pattern', 'corn-strip-trial'] as const
+export const methodIds = ['watch-field', 'scout-pattern', 'corn-strip-trial', 'historical-yield'] as const
 export const methodRefSchema = z.object({ id: z.enum(methodIds), version: z.literal(1), sha256: z.string().regex(/^[a-f0-9]{64}$/) })
 export type MethodRef = z.infer<typeof methodRefSchema>
 export const artifactSchema = z.object({ id: text, path: text, filename: text, mediaType: text, sha256: z.string().regex(/^[a-f0-9]{64}$/), bytes: z.number().int().nonnegative() })
@@ -44,17 +45,17 @@ export const checkSchema = z.object({ id: text, monitorId: text, method: methodR
 export type MonitorCheck = z.infer<typeof checkSchema>
 export const scoutInputSchema = z.object({ fieldId: text, checkId: text.optional(), question: text, notes: z.string().trim().min(1).max(100000) })
 export const scoutSchema = scoutInputSchema.extend({ id: text, method: methodRefSchema, createdAt: z.iso.datetime(), artifactIds: z.array(text) })
-export const trialInputSchema = z.object({ fieldId: text, scoutId: text.optional(), previousTrialId: text.optional(), cornPlanId: text.optional(), sourceIds: z.array(text), question: text, baseline: text, alternative: text, constraints: text, measurements: text, design: z.enum(['exploratory', 'randomized-block']), replicates: z.number().int().min(1).max(12) }).superRefine((t, ctx) => {
+export const trialInputSchema = z.object({ fieldId: text, investigationId: text.optional(), scoutId: text.optional(), previousTrialId: text.optional(), cornPlanId: text.optional(), sourceIds: z.array(text), question: text, baseline: text, alternative: text, constraints: text, measurements: text, design: z.enum(['exploratory', 'randomized-block']), replicates: z.number().int().min(1).max(12) }).superRefine((t, ctx) => {
   if (t.design === 'randomized-block' && t.replicates < 2) ctx.addIssue({ code: 'custom', message: 'A replicated design needs at least two blocks; review the appropriate number with your adviser.' })
 })
 export const resultRowSchema = z.object({ block: z.number().int().positive(), baselineYield: z.number().nonnegative().max(100000), alternativeYield: z.number().nonnegative().max(100000) })
 export const trialSchema = z.object({
-  id: text, fieldId: text, scoutId: text.optional(), previousTrialId: text.optional(), cornPlanId: text.optional(), sourceIds: z.array(text), question: text, baseline: text, alternative: text, constraints: text, measurements: text, design: z.enum(['exploratory', 'randomized-block']), replicates: z.number().int().min(1).max(12),
+  id: text, fieldId: text, investigationId: text.optional(), scoutId: text.optional(), previousTrialId: text.optional(), cornPlanId: text.optional(), sourceIds: z.array(text), question: text, baseline: text, alternative: text, constraints: text, measurements: text, design: z.enum(['exploratory', 'randomized-block']), replicates: z.number().int().min(1).max(12),
   method: methodRefSchema, createdAt: z.iso.datetime(), status: z.enum(['draft', 'tracking', 'reviewed']),
   layout: z.array(z.object({ block: z.number().int().positive(), first: z.enum(['baseline', 'alternative']) })),
   results: z.object({ unit: z.enum(['kg/ha', 't/ha']), rows: z.array(resultRowSchema), baselineMean: z.number().nullable(), alternativeMean: z.number().nullable(), meanDifference: z.number().nullable(), complete: z.boolean(), interpretation: text, farmerDecision: text, recordedAt: z.iso.datetime() }).optional(), artifactIds: z.array(text),
 })
-export const learningStateSchema = z.object({ version: z.literal(1), monitors: z.array(monitorSchema), checks: z.array(checkSchema), scouts: z.array(scoutSchema), trials: z.array(trialSchema), artifacts: z.array(artifactSchema) })
+export const learningStateSchema = z.object({ version: z.literal(2), monitors: z.array(monitorSchema), checks: z.array(checkSchema), scouts: z.array(scoutSchema), trials: z.array(trialSchema), artifacts: z.array(artifactSchema) })
 export type LearningState = z.infer<typeof learningStateSchema>
 export interface MethodCard { id: typeof methodIds[number]; version: 1; title: string; question: string; stage: 'observe' | 'investigate' | 'experiment'; effort: string; needs: string[]; produces: string[]; limits: string; sources: { title: string; url: string }[]; ref: MethodRef; instructions: string }
-export interface LearningSnapshot extends LearningState { methods: MethodCard[]; workspace: string; storageError?: string }
+export interface LearningSnapshot extends LearningState { investigations: Investigation[]; methods: MethodCard[]; workspace: string; storageError?: string }

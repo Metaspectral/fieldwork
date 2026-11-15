@@ -56,3 +56,5 @@
 
 .downloadLink { color: var(--dsw-alias-label-primary); text-decoration: underline; text-underline-offset: 3px; }
 .downloadLink:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; }
+
+.page > .actions { margin-inline: auto; }

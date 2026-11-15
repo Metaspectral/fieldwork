@@ -1,0 +1,10 @@
+{
+  "id": "historical-yield", "version": 1,
+  "title": "Investigate recurring low-yield areas",
+  "question": "Does a pattern recur in comparable corn seasons, and what should we inspect before changing practice?",
+  "stage": "investigate", "effort": "Start with a yield worksheet or map. Add matched seasons and field observations as they become available.",
+  "needs": ["A field and a question", "Original yield records with their season, crop, units and coordinate system reviewed", "No treatment, seed quote or current field polygon is required to save the investigation"],
+  "produces": ["A versioned investigation and selected evidence", "Yield-point quality checks and a coordinate-space preview", "An editable checklist with optional owners and dates", "A question that can later lead to a farmer-selected trial"],
+  "limits": "One map cannot establish persistence or cause. Points are not independent treatment replicates; their average is not an area-weighted field yield. Coordinates and units need review. Cross-season alignment and treatment-effect statistics are not automated.",
+  "sources": [{"title": "USDA BARC open yield archive", "url": "https://doi.org/10.15482/USDA.ADC/28950746"}, {"title": "SARE on-farm research", "url": "https://www.sare.org/resources/how-to-conduct-research-on-your-farm-or-ranch/"}]
+}

@@ -7,7 +7,10 @@ import { LearningError } from '../../plugins/learning-error.ts'
 export async function performLearning(workspace: LearningWorkspace, input: unknown) {
   const c = z.object({ action: z.string(), payload: z.unknown(), confirmed: z.literal(true) }).parse(input)
   let createdId: string | undefined
-  if (c.action === 'learning/demo') createdId = await workspace.createDemo()
+  if (c.action === 'learning/public-case') createdId = await workspace.createPublicCase()
+  else if (c.action === 'learning/investigation') createdId = await workspace.saveInvestigation(c.payload)
+  else if (c.action === 'learning/yield') createdId = await workspace.analyzeYield(c.payload)
+  else if (c.action === 'learning/demo') createdId = await workspace.createDemo()
   else if (c.action === 'learning/enable') createdId = await workspace.enableMonitor(c.payload)
   else if (c.action === 'learning/check') await workspace.checkNow(z.object({ id: z.string() }).parse(c.payload).id)
   else if (c.action === 'learning/active') { const p = z.object({ id: z.string(), active: z.boolean() }).parse(c.payload); await workspace.setMonitorActive(p.id, p.active) }

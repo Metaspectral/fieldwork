@@ -41,6 +41,7 @@ test('source library and corn decisions complete a native farmer workflow', { ti
     await page.waitForFunction(() => !document.querySelector('[role="dialog"]'))
     await mkdir(artifactDir, { recursive: true })
     await page.getByRole('button', { name: 'Inspect and cite', exact: true }).click()
+    await page.getByRole('button', { name: '32000', exact: true }).click()
     await page.getByText("'Sheet1'!B2", { exact: true }).waitFor()
     await page.screenshot({ animations: 'disabled', path: join(artifactDir, 'source-cells.png') })
     await page.getByRole('dialog').getByRole('button', { name: 'Close', exact: true }).click()

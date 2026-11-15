@@ -1,0 +1,47 @@
+.contextBar { display: flex; flex-wrap: wrap; align-items: end; gap: 16px; padding-block: 14px; margin-bottom: 24px; border-block: 1px solid var(--dsw-alias-border-l3); }
+.contextBar label { display: flex; flex-direction: column; gap: 6px; min-width: 140px; flex: 1; }
+.contextBar label:first-child { flex: 3; }
+.contextBar span, .muted, .metadata { color: var(--dsw-alias-label-secondary); font-size: 12px; }
+.contextBar span { flex-basis: 100%; }
+.contextBar input, .contextBar select, .toolbar select { padding: 8px 10px; border: 1px solid var(--dsw-alias-border-l3); border-radius: 8px; background: var(--dsw-alias-bg-base); color: var(--dsw-alias-label-primary); font: inherit; min-width: 0; width: 100%; }
+.contextBar input:focus-visible, .contextBar select:focus-visible, .toolbar select:focus-visible, .sheetTable button:focus-visible { outline: 2px solid var(--dsw-alias-color-primary); outline-offset: 2px; }
+.metadata, .toolbar, .pagination { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.toolbar > label { flex: 1; }
+.pagination { justify-content: space-between; margin-top: 16px; }
+.sheetTable { border-collapse: collapse; min-width: 100%; font-size: 13px; }
+.sheetTable caption { text-align: start; padding-bottom: 10px; color: var(--dsw-alias-label-secondary); }
+.sheetTable th { text-align: start; color: var(--dsw-alias-label-secondary); background: var(--dsw-alias-bg-layer-1); font-weight: 500; padding: 8px 12px; }
+.sheetTable td { border-bottom: 1px solid var(--dsw-alias-border-l3); padding: 0; }
+.sheetTable button { border: 0; background: transparent; color: inherit; font: inherit; text-align: start; width: 100%; padding: 9px 12px; min-height: 36px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.sheetTable button[aria-pressed='true'] { background: var(--dsw-alias-bg-layer-2); }
+.citation { margin-top: 16px; padding: 12px; border: 1px solid var(--dsw-alias-border-l3); border-radius: 8px; }
+.sourceDetails { margin-top: 18px; overflow-wrap: anywhere; }
+.documentPage { padding: 16px; border: 1px solid var(--dsw-alias-border-l3); border-radius: 8px; }
+.documentPage p { line-height: 1.8; }
+.sourceImage { display: block; max-width: 100%; max-height: 650px; object-fit: contain; margin: 16px auto; }
+.workspace { padding-block: 8px 24px; }
+.workspaceHeader { display: flex; align-items: start; justify-content: space-between; gap: 16px; margin-bottom: 12px; }
+.row { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 14px 0; border-bottom: 1px solid var(--dsw-alias-border-l3); }
+.row > div { min-width: 0; }
+.row p { margin: 5px 0 0; }
+.row h3 { margin: 0; font-size: 14px; font-weight: 500; }
+.detail { border-top: 1px solid var(--dsw-alias-border-l3); margin-top: 20px; padding-top: 20px; }
+.detail h2 { margin-bottom: 8px; }
+.taskList { padding: 0; list-style: none; }
+.taskList li { display: flex; align-items: start; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--dsw-alias-border-l3); }
+.taskList label { flex: 1; overflow-wrap: anywhere; }
+.taskList input { margin-top: 4px; }
+.analysisGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.analysis { padding: 16px; border: 1px solid var(--dsw-alias-border-l3); border-radius: 8px; min-width: 0; }
+.analysis:only-child { grid-column: 1 / -1; }
+.analysis svg { display: block; width: 100%; height: 260px; background: var(--dsw-alias-bg-layer-1); border-radius: 8px; }
+.analysis dl { display: grid; grid-template-columns: 1fr auto; gap: 8px; }
+.analysis dd { margin: 0; }
+.legend { display: flex; align-items: center; gap: 8px; font-size: 12px; margin-top: 8px; }
+.legend span { width: 64px; height: 8px; background: linear-gradient(90deg, #355c9a, #dfbd5c); }
+.evidenceChoices { display: grid; gap: 10px; padding: 0; list-style: none; }
+.evidenceChoice { border-bottom: 1px solid var(--dsw-alias-border-l3); padding-bottom: 12px; }
+.evidenceChoice > label { display: flex; gap: 8px; align-items: start; }
+.empty { border-block: 1px solid var(--dsw-alias-border-l3); padding-block: 20px; margin-bottom: 20px; }
+@media (max-width: 900px) { .analysisGrid { grid-template-columns: minmax(0, 1fr); } .workspaceHeader, .row { flex-wrap: wrap; } }
+@media (pointer: coarse) { .contextBar input, .contextBar select, .toolbar select { font-size: 16px; } }

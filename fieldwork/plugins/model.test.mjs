@@ -28,11 +28,13 @@ test('gpt-6.1-sol uses the Codex subscription through the actual Harness loop', 
   assert.deepEqual(result.after,result.before)
   const calls=result.events.filter(e=>e.type==='tool/call').map(e=>e.data.name)
   assert.ok(calls.includes('read_my_farm'),'Model must actually read farm context')
-  if (process.env.FIELDWORK_LEARNING_MODEL_TEST === '1') { assert.ok(calls.includes('discover_farm_methods')); assert.ok(calls.includes('read_farm_method')); assert.deepEqual(result.learningBefore,result.learningAfter) }
+  if (process.env.FIELDWORK_INVESTIGATION_MODEL_TEST === '1') { assert.ok(calls.includes('discover_farm_methods')); assert.ok(calls.includes('read_farm_method')); assert.deepEqual(result.learningBefore,result.learningAfter); assert.ok(!calls.includes('compare_seed_quotes')); assert.ok(!calls.includes('propose_corn_plan')) }
+  else if (process.env.FIELDWORK_LEARNING_MODEL_TEST === '1') { assert.ok(calls.includes('discover_farm_methods')); assert.ok(calls.includes('read_farm_method')); assert.deepEqual(result.learningBefore,result.learningAfter) }
   else if (process.env.FIELDWORK_RESEARCH_MODEL_TEST === '1') { assert.ok(calls.includes('read_farm_research')); assert.ok(calls.includes('read_farm_source')) }
   else assert.ok(calls.includes('compare_seed_quotes'),'Model must actually call the deterministic calculator')
   const answers=result.events.filter(e=>e.type==='assistant/message').flatMap(e=>e.data.message.content).filter(b=>b.type==='text').map(b=>b.text)
-  if (process.env.FIELDWORK_LEARNING_MODEL_TEST === '1') { assert.match(answers.at(-1), /weekly|seven|7.days/i); assert.match(answers.at(-1), /simulat|fictional|demo/i) }
+  if (process.env.FIELDWORK_INVESTIGATION_MODEL_TEST === '1') { assert.match(answers.at(-1), /unweighted|not.*area.weighted|point.mean/i); assert.match(answers.at(-1), /unknown|missing/i) }
+  else if (process.env.FIELDWORK_LEARNING_MODEL_TEST === '1') { assert.match(answers.at(-1), /weekly|seven|7.days/i); assert.match(answers.at(-1), /simulat|fictional|demo/i) }
   else if (process.env.FIELDWORK_RESEARCH_MODEL_TEST === '1') { assert.match(answers.at(-1), /38,?889/); assert.match(answers.at(-1), /300/); assert.match(answers.at(-1), /block 1/); assert.ok(answers.at(-1).includes(result.before.sources[0].id)) }
   else assert.ok(answers.at(-1).includes('216'),'Final response must report the verified saving')
   assert.equal(result.events.filter(e=>e.type==='turn/end').at(-1).data.reason.kind,'completed')

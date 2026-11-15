@@ -43,6 +43,17 @@ export function apply(ctx: Context): void {
       res.writeHead(200, { 'Content-Type': 'application/octet-stream', 'Content-Disposition': `attachment; filename="fieldwork-original"; filename*=UTF-8''${encodeURIComponent(filename)}`, 'X-Content-Type-Options': 'nosniff', 'Cache-Control': 'no-store' }).end(bytes)
     } catch (error) { res.writeHead(error instanceof FarmError && error.code === 'FARM_INPUT' || error instanceof LearningError && error.code === 'LEARNING_INPUT' ? 404 : 500).end() }
   } }))
+  ctx.effect(() => ctx.webServer.register({ kind: 'exact', path: '/fieldwork-image', auth: 'required', async handler(req, res, peer) {
+    if (peer?.principal.kind !== 'owner') { res.writeHead(403).end(); return }
+    if (req.method !== 'GET') { res.writeHead(405).end(); return }
+    try {
+      const id = new URL(req.url ?? '', 'http://localhost').searchParams.get('id') ?? ''
+      const source = ctx.farmRecords.snapshot().sources.find(s => s.id === id)
+      if (!source?.mediaType) { res.writeHead(404).end(); return }
+      const bytes = await ctx.farmRecords.original(id)
+      res.writeHead(200, { 'Content-Type': source.mediaType, 'X-Content-Type-Options': 'nosniff', 'Cache-Control': 'no-store', 'Content-Security-Policy': "default-src 'none'; sandbox" }).end(bytes)
+    } catch { res.writeHead(500).end() }
+  } }))
   ctx.effect(() => ctx.webServer.register({ kind: 'exact', path: '/fieldwork-learning-file', auth: 'required', async handler(req, res, peer) {
     if (peer?.principal.kind !== 'owner') { res.writeHead(403).end(); return }
     if (req.method !== 'GET') { res.writeHead(405).end(); return }

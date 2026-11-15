@@ -21,6 +21,8 @@ The application is the Harness itself: its chat, tool cards, approvals, sessions
 
 Each capability is a separate Cordis plugin within the Fieldwork agent preset. A Host plugin owns their shared private records. Native approval gates every model-requested mutation; a tool argument cannot grant its own approval. Page actions show a review dialog before the owner saves.
 
+Field learning also supports open historical-yield investigations with true unknowns, original-file views, descriptive point checks, and local work items. Try the reviewed [Beltsville public-data case](examples/beltsville/README.md).
+
 ## Start here
 
 - [Screenshots](screenshots/README.md) and [starter identity](brand/README.md)

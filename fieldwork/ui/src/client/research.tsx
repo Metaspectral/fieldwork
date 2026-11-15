@@ -5,6 +5,8 @@ import type { PropsRuntime, PropsLocale, InjectFace } from '@deepseek-ai/dsh-cli
 import { cornCalculation } from '../../../plugins/domain.ts'
 import type { FarmState } from '../../../plugins/records.ts'
 import type { Face } from './controller.ts'
+import { EvidenceView } from './evidence.tsx'
+import { FieldSeasonContext } from './context.tsx'
 import { FieldContext } from './fields.tsx'
 import css from './page.module.css'
 type Props = PropsRuntime<'main'> & PropsLocale<'fieldwork'> & InjectFace<Face>
@@ -20,7 +22,6 @@ export function ResearchPage(props: Props): ReactNode {
   const [review, setReview] = useState<Review | null>(null)
   const [localError, setLocalError] = useState<string | null>(null)
   const [search, setSearch] = useState('')
-  const [sourceSearch, setSourceSearch] = useState('')
   const data = state.data
   const source = data?.sources.find(s => s.id === sourceId)
   const previous = data?.cornPlans.find(p => p.id === selected)
@@ -35,11 +36,11 @@ export function ResearchPage(props: Props): ReactNode {
       if (editor === 'field') request('field', { name: v.name, areaHa: Number(v.areaHa), evidence: v.evidence, notes: [v.reason] }, `${v.name} · ${v.areaHa} ha · ${v.reason}`)
       if (editor === 'source') {
         const file = v.file as File
-        if (!file.size) { request('capture-source', { title: v.title, origin: v.origin, scope: v.scope, evidence: v.evidence }, `${v.title} · ${v.origin} · ${v.scope}\n${t('captureScope')}`); return }
+        if (!file.size) { request('capture-source', { title: v.title, origin: v.origin, scope: v.scope, evidence: v.evidence, ...(v.sourceSeason ? { season: Number(v.sourceSeason) } : {}), ...(state.selection.fieldId ? { fieldId: state.selection.fieldId } : {}) }, `${v.title} · ${v.origin} · ${v.scope}\n${t('captureScope')}`); return }
         if (file.size > 5 * 1024 * 1024) throw new Error(t('sourceLimit'))
         const bytes = new Uint8Array(await file.arrayBuffer())
         let binary = ''; for (const byte of bytes) binary += String.fromCharCode(byte)
-        request('import-source', { title: v.title, origin: v.origin, scope: v.scope, evidence: v.evidence, filename: file.name, base64: btoa(binary) }, `${v.title} · ${file.name} · ${v.origin} · ${v.evidence} · ${v.scope}`)
+        request('import-source', { title: v.title, origin: v.origin, scope: v.scope, evidence: v.evidence, filename: file.name, base64: btoa(binary), ...(v.sourceSeason ? { season: Number(v.sourceSeason) } : {}), ...(state.selection.fieldId ? { fieldId: state.selection.fieldId } : {}) }, `${v.title} · ${file.name} · ${v.origin} · ${v.evidence} · ${v.scope}`)
       }
       if (editor === 'corn') {
         const selectedField = data!.fields.find(f => f.id === v.fieldId)!
@@ -56,26 +57,28 @@ export function ResearchPage(props: Props): ReactNode {
   if (!data) return <section className={css.page}><h1>{t(props.section)}</h1><p role="status">{state.error ?? t('loading')}</p></section>
   return <section className={css.page}>
     <header className={css.header}><div><p className={css.brandLine}>{t('brandLine')}</p><h1>{t(props.section)}</h1><p>{t(props.section === 'library' ? 'libraryIntro' : 'cornIntro')}</p></div><Button onClick={() => { setSelected(null); setEditor(props.section === 'library' ? 'source' : 'corn') }} disabled={state.busy || props.section === 'corn' && (!data.fields.some(f => f.areaHa) || !data.sources.length)}>{t(props.section === 'library' ? 'importSource' : 'newCornPlan')}</Button></header>
+    <FieldSeasonContext data={data} selection={state.selection} select={props.selectContext} t={t} />
     <div className={css.status}><span>{t('local')}</span><span>{t('private')}</span></div>
     {state.error && <p role="alert">{state.error}</p>}
     {state.saved && <p role="status">{t('saved')}</p>}
     {props.section === 'library' ? <>
       <label className={css.field}>{t('searchEvidence')}<input value={search} onChange={e => setSearch(e.target.value)} /></label>
       {!data.sources.length && <section className={css.card}><h2>{t('keepYourTools')}</h2><p>{t('sourceEmpty')}</p></section>}
-      {data.sources.filter(s => `${s.title} ${s.origin} ${s.scope}`.toLowerCase().includes(search.toLowerCase())).map(s => <article className={css.card} key={s.id}>
-        <div className={css.meta}><span>{s.kind} · {s.evidence}</span><time>{new Date(s.capturedAt).toLocaleDateString()}</time></div>
-        <h2>{s.title}</h2><p>{s.origin}</p><p>{s.scope}</p><div className={css.actions}><Button onClick={() => { setSourceId(s.id); setSourceSearch('') }}>{t('inspectEvidence')}</Button>{s.originalFile && <a className={css.downloadLink} href={new URL(`fieldwork-original?id=${encodeURIComponent(s.id)}`, document.baseURI).href} download>{t('downloadOriginal')}</a>}</div><small>SHA-256 {s.sha256}</small>
+      {data.sources.filter(s => (!state.selection.fieldId || !s.fieldId || s.fieldId === state.selection.fieldId) && (!state.selection.season || !s.season || s.season === state.selection.season)).filter(s => `${s.title} ${s.origin} ${s.scope}`.toLowerCase().includes(search.toLowerCase())).map(s => <article className={css.card} key={s.id}>
+        <div className={css.meta}><span>{s.kind} · {s.evidence}</span><span>{s.season ?? t('seasonUnknown')}</span></div>
+        <h2>{s.title}</h2><p>{s.origin}</p><p>{s.scope}</p><div className={css.actions}><Button onClick={() => { setSourceId(s.id) }}>{t('inspectEvidence')}</Button>{s.originalFile && <a className={css.downloadLink} href={new URL(`fieldwork-original?id=${encodeURIComponent(s.id)}`, document.baseURI).href} download>{t('downloadOriginal')}</a>}</div>
       </article>)}
     </> : <>
+      <div className={css.actions}><Button onClick={() => props.navigate('learning')}>{t('newInvestigation')}</Button><p>{t('budgetOptional')}</p></div>
       <FieldContext fields={data.fields} t={t} action={<Button onClick={() => setEditor('field')}>{t('addField')}</Button>} />
       {!data.sources.length && <p>{t('cornNeedsSources')}</p>}
       {!data.cornPlans.length && <section className={css.card}><h2>{t('learnFromBaseline')}</h2><p>{t('cornEmpty')}</p><Button onClick={() => request('corn-demo', {}, t('cornDemoScope'))}>{t('loadCornDemo')}</Button></section>}
-      {data.cornPlans.toReversed().map(p => <CornDecision key={p.id} plan={p} data={data} t={t} busy={state.busy} accept={() => request('accept-corn', { id: p.id }, `${t('acceptCornScope')}\n${p.baselineReason}\n${p.constraints.join('\n')}\n${JSON.stringify(p.inputs)}\n${p.citations.map(c => `${c.sourceId} / ${c.locator}`).join('\n')}`)} revise={() => { setSelected(p.id); setEditor('corn') }} observe={() => { setSelected(p.id); setEditor('observation') }} source={id => { setSourceId(id); setSourceSearch('') }} />)}
+      {data.cornPlans.filter(p => (!state.selection.fieldId || p.fieldId === state.selection.fieldId) && (!state.selection.season || p.season === state.selection.season)).toReversed().map(p => <CornDecision key={p.id} plan={p} data={data} t={t} busy={state.busy} accept={() => request('accept-corn', { id: p.id }, `${t('acceptCornScope')}\n${p.baselineReason}\n${p.constraints.join('\n')}\n${JSON.stringify(p.inputs)}\n${p.citations.map(c => `${c.sourceId} / ${c.locator}`).join('\n')}`)} revise={() => { setSelected(p.id); setEditor('corn') }} observe={() => { setSelected(p.id); setEditor('observation') }} source={id => { setSourceId(id) }} />)}
     </>}
     <Modal className={css.researchModal!} contentClassName={css.researchModalContent!} open={editor !== null} onClose={() => setEditor(null)} closeLabel={t('close')} title={t(editor === 'field' ? 'addField' : editor === 'source' ? 'importSource' : editor === 'observation' ? 'observe' : 'newCornPlan')}>
       {localError && <p role="alert">{localError}</p>}<form onSubmit={e => void submit(e)}>
       {editor === 'field' && <>{field('name', t('fieldName'))}{field('areaHa', t('area'), '', 'number', { min: .0001, step: 'any' })}{options('evidence', t('evidence'), ['farmer-reported', 'measured', 'demo'].map(id => ({ id, label: id })), 'farmer-reported')}{field('reason', t('reason'))}</>}
-      {editor === 'source' && <>{field('title', t('sourceTitle'))}{field('origin', t('sourceOrigin'))}{field('scope', t('sourceScope'))}{options('evidence', t('evidence'), evidence.map(id => ({ id, label: id })), 'farmer-reported')}<label className={css.field}>{t('originalDocument')}<input type="file" name="file" accept=".xlsx,.xls,.csv,.ods,.pdf,.html,.htm,.json,.geojson,.txt,.md" /></label><p>{t('sourceLimit')}</p><p>{t('captureScope')}</p></>}
+      {editor === 'source' && <>{field('title', t('sourceTitle'))}{field('origin', t('sourceOrigin'))}{field('scope', t('sourceScope'))}<label className={css.field}>{t('evidenceSeason')}<input name="sourceSeason" type="number" min="1900" max="2200" defaultValue={state.selection.season ?? ''} /></label>{options('evidence', t('evidence'), evidence.map(id => ({ id, label: id })), 'farmer-reported')}<label className={css.field}>{t('originalDocument')}<input type="file" name="file" accept=".xlsx,.xls,.csv,.ods,.pdf,.html,.htm,.json,.geojson,.txt,.md,.png,.jpg,.jpeg" /></label><p>{t('sourceLimit')}</p><p>{t('captureScope')}</p></>}
       {editor === 'corn' && <>
         {options('fieldId', t('fieldName'), data.fields.filter(f => f.areaHa).map(f => ({ id: f.id, label: `${f.name} · ${f.areaHa} ha · ${f.evidence}` })), previous?.fieldId)}
         {field('season', t('season'), previous?.season ?? new Date().getFullYear() + 1, 'number', { min: 1900, max: 2200 })}
@@ -94,8 +97,7 @@ export function ResearchPage(props: Props): ReactNode {
       {state.error && <p role="alert">{state.error}</p>}<p className={css.preserveLines}>{review?.description}</p>
     </Modal>
     <Modal className={css.researchModal!} contentClassName={css.researchModalContent!} open={source !== undefined} onClose={() => setSourceId(null)} closeLabel={t('close')} title={source?.title ?? t('source')}>
-      <p>{source?.scope} · {source?.evidence}</p><p>{source?.origin}</p><label className={css.field}>{t('searchEvidence')}<input value={sourceSearch} onChange={e => setSourceSearch(e.target.value)} /></label>
-      {source?.sections.filter(s => `${s.locator} ${s.text}`.toLowerCase().includes(sourceSearch.toLowerCase())).slice(0, 100).map(s => <div className={css.observation} key={s.locator}><strong>{s.locator}</strong><SourceSection text={s.text} spreadsheet={source.kind === 'spreadsheet'} t={t} /><small>{source.id} / {s.locator}</small></div>)}<p>{t('sourcePageLimit')}</p>
+      {source && <EvidenceView key={source.id} source={source} t={t} />}
     </Modal>
   </section>
 }
@@ -111,12 +113,4 @@ function CornDecision({ plan: p, data, t, busy, accept, revise, observe, source 
     <div className={css.actions}>{p.status === 'proposed' ? <Button disabled={busy} onClick={accept}>{t('acceptCorn')}</Button> : <Button disabled={busy} onClick={observe}>{t('observe')}</Button>}<Button disabled={busy} onClick={revise}>{t('newRevision')}</Button></div>
     <h3>{t('learningRecord')}</h3>{p.observations.length ? <ol>{p.observations.map(o => <li key={o.id}><p>{o.date} · {o.evidence}</p><p>{o.text}</p></li>)}</ol> : <p>{t('noObservations')}</p>}
   </article>
-}
-
-function SourceSection({ text, spreadsheet, t }: { text: string; spreadsheet: boolean; t: Props['t'] }): ReactNode {
-  if (!spreadsheet) return <p className={css.preserveLines}>{text}</p>
-  let cell: { value?: unknown; formula?: unknown; calculation?: unknown }
-  try { cell = JSON.parse(text) } catch { return <p>{text}</p> }
-  if (!cell || typeof cell !== 'object') return <p>{text}</p>
-  return <dl><dt>{t('cellValue')}</dt><dd>{cell.value === null || cell.value === undefined ? '—' : String(cell.value)}</dd>{typeof cell.formula === 'string' && <><dt>{t('cellFormula')}</dt><dd><code>={cell.formula}</code></dd><p>{t('cachedFormula')}</p></>}</dl>
 }

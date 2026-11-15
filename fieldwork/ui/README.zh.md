@@ -4,6 +4,8 @@
 
 这个私有 Cordis 插件在 Harness 主面板和侧栏插槽中注册 My farm、Community、Experiments、Source library、Corn planning 和 Field learning，复用原生主题变量、按钮、对话框、本地化服务及现有应用外壳。
 
+共享田块及季节选择随导航保留。My farm 默认显示可读概览，按需编辑或打开报价计算。Field learning 保留不完整调查、显示原始证据、记录本地任务，并将后续比较关联到同一问题。来源视图使用缓存单元格表格、PDF 页面文本和经过认证的 PNG/JPEG 图片；选择后显示精确引用。参见[公开示例](../examples/beltsville/README.zh.md)。
+
 ## 使用
 
 在仓库根目录运行 `pnpm run fieldwork:build`，然后运行 `pnpm run fieldwork:start`。打开经过认证的服务器链接，在侧栏选择 Fieldwork 页面。页面操作不需要模型。
@@ -21,7 +23,7 @@
 
 ```sh
 pnpm --filter @fieldwork/ui typecheck
-node --test fieldwork/ui/browser.test.mjs fieldwork/ui/research.browser.test.mjs fieldwork/ui/learning.browser.test.mjs
+node --test fieldwork/ui/browser.test.mjs fieldwork/ui/research.browser.test.mjs fieldwork/ui/learning.browser.test.mjs fieldwork/ui/investigation.browser.test.mjs
 ```
 
 设置 `FIELDWORK_BROWSER_CHANNEL=chrome` 可使用已安装的 Chrome，替代 Playwright 浏览器。浏览器测试在分配的回环端口启动隔离的 Harness，检查保存前审查、私人改编、观察、发布预览、撤回、持久化及移动端溢出，并将截图保存到 Git 忽略的 `.artifacts/native-pages`。

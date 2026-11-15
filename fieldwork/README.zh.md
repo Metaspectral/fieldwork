@@ -21,6 +21,8 @@
 
 每项能力都是 Fieldwork 智能体预设中的独立 Cordis 插件。一个 Host 插件拥有共享的私人记录。模型请求的所有修改均经过原生审批；工具参数不能自行授予批准。页面操作在所有者保存前显示审查对话框。
 
+Field learning 还支持历史产量调查，保留真实未知项、原始文件视图、描述性点检查及本地任务。可尝试经过审核的 [Beltsville 公开数据示例](examples/beltsville/README.zh.md)。
+
 ## 从这里开始
 
 - [截图](screenshots/README.zh.md)及[初始品牌](brand/README.zh.md)

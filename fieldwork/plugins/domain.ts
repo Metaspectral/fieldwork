@@ -15,6 +15,7 @@ export const sourceSchema = z.object({
   origin: text, capturedAt: z.iso.datetime(), sha256: z.string().regex(/^[a-f0-9]{64}$/),
   evidence: evidenceKind, scope: text,
   sections: z.array(z.object({ locator: text, text: z.string().max(100000) })).max(10000),
+  season: z.number().int().min(1900).max(2200).optional(), fieldId: text.optional(), mediaType: z.enum(['image/png', 'image/jpeg']).optional(),
   originalFile: text.optional(), filename: z.string().max(200).optional(),
 })
 export const cornInputsSchema = z.object({

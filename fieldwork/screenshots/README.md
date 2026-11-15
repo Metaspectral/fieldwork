@@ -59,3 +59,5 @@ Responsive experiment view; phone pairing is not implemented.
 ## Refresh the gallery
 
 From the repository root, run `pnpm run fieldwork:build`, then `FIELDWORK_BROWSER_CHANNEL=chrome node --test fieldwork/ui/browser.test.mjs`. Omit the channel variable when using Playwright's installed browser. Inspect `.artifacts/native-pages/` and copy the seven named PNGs into this directory. Keep private runtime records and authentication URLs out of captures.
+
+[Beltsville investigation: original files, yield-point quality, and local work](investigations/README.md).

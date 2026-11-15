@@ -1,0 +1,2 @@
+# Preserve downloaded worksheet bytes rather than normalizing its original CRLF.
+yield-points-2014.csv binary

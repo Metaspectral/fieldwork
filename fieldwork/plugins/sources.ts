@@ -7,7 +7,7 @@ import * as XLSX from 'xlsx'
 import { parse } from 'parse5'
 import { sourceSchema, evidenceKind } from './domain.ts'
 import { FarmError } from './records.ts'
-export const sourceInputSchema = z.object({ title: z.string().trim().min(1).max(2000), origin: z.string().trim().min(1).max(2000), evidence: evidenceKind, scope: z.string().trim().min(1).max(2000), filename: z.string().max(200) })
+export const sourceInputSchema = z.object({ title: z.string().trim().min(1).max(2000), origin: z.string().trim().min(1).max(2000), evidence: evidenceKind, scope: z.string().trim().min(1).max(2000), filename: z.string().max(200), season: z.number().int().min(1900).max(2200).optional(), fieldId: z.string().optional() })
 export type SourceInput = z.infer<typeof sourceInputSchema>
 /** Reject oversized or unreadable documents instead of silently truncating evidence. */
 export async function extractSource(bytes: Uint8Array, input: SourceInput) {
@@ -23,7 +23,12 @@ export async function extractSource(bytes: Uint8Array, input: SourceInput) {
   }
   const suffix = meta.filename.split('.').pop()?.toLowerCase()
   let kind: 'spreadsheet' | 'pdf' | 'website' | 'knowledge'
-  if (['xlsx', 'xls', 'csv', 'ods'].includes(suffix ?? '')) {
+  let mediaType: 'image/png' | 'image/jpeg' | undefined
+  if (['png', 'jpg', 'jpeg'].includes(suffix ?? '')) {
+    const png = Buffer.from(bytes.subarray(0, 8)).equals(Buffer.from([137,80,78,71,13,10,26,10])), jpeg = bytes[0] === 255 && bytes[1] === 216 && bytes[2] === 255
+    if (!png && !jpeg || suffix === 'png' && !png || suffix !== 'png' && !jpeg) throw new FarmError('Choose a PNG or JPEG with matching original bytes.', 'FARM_INPUT')
+    kind = 'knowledge'; mediaType = png ? 'image/png' : 'image/jpeg'; add('image', 'Original image. Review its legend, season, units and source before interpreting it.')
+  } else if (['xlsx', 'xls', 'csv', 'ods'].includes(suffix ?? '')) {
     kind = 'spreadsheet'
     // SheetJS reads cached values and formula text; it does not calculate or execute macros.
     const workbook = XLSX.read(bytes, { type: 'array', cellFormula: true, cellText: true, bookVBA: false, sheetRows: 10001 })
@@ -59,7 +64,7 @@ export async function extractSource(bytes: Uint8Array, input: SourceInput) {
   } else if (['txt', 'md', 'json', 'geojson'].includes(suffix ?? '')) {
     kind = 'knowledge'
     Buffer.from(bytes).toString('utf8').split(/\n\s*\n/).filter(t => t.trim()).forEach((text, i) => add(`block ${i + 1}`, text.trim()))
-  } else throw new FarmError('Supported originals: XLSX, XLS, CSV, ODS, PDF, HTML, JSON, GeoJSON, TXT, and Markdown.', 'FARM_INPUT')
+  } else throw new FarmError('Supported originals: XLSX, XLS, CSV, ODS, PDF, HTML, JSON, GeoJSON, TXT, Markdown, PNG, and JPEG.', 'FARM_INPUT')
   if (!sections.some(s => s.text.trim())) throw new FarmError('No readable text or cells found. Scanned PDFs need OCR before import.', 'FARM_INPUT')
-  return sourceSchema.parse({ id: randomUUID(), ...meta, kind, sha256: createHash('sha256').update(bytes).digest('hex'), capturedAt: new Date().toISOString(), sections })
+  return sourceSchema.parse({ id: randomUUID(), ...meta, kind, sha256: createHash('sha256').update(bytes).digest('hex'), capturedAt: new Date().toISOString(), sections, ...(mediaType ? { mediaType } : {}) })
 }

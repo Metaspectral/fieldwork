@@ -171,3 +171,59 @@ test('a failed season can retain a reviewed decision without invented yield meas
     assert.equal(results.baselineMean, null); assert.equal(results.alternativeMean, null); assert.equal(results.meanDifference, null); assert.equal(results.complete, false)
   } finally { await f.dispose() }
 })
+
+test('an incomplete historical investigation retains seasons, unknowns, work, quality files and revisions', async () => {
+  const f = await fixture()
+  try {
+    await f.farm.change(s => { s.fields.push({ id: 'real-field', name: 'Historical corn field', areaHa: 11.7156, evidence: 'measured', years: {}, notes: ['Current crop unknown.'] }) })
+    const source = await f.farm.importSource(Buffer.from('X,Y,Yield\n1,2,0\n2,3,10\n2,3,20\n3,4,\n4,5,-1\n5,6,not-a-number\n'), { title: 'Archived corn points', filename: 'yield.csv', origin: 'Public archive', evidence: 'measured', scope: 'Historical only', season: 2014, fieldId: 'real-field' })
+    const input = { fieldId: 'real-field', question: 'Do these bands persist?', notes: 'No field visit or treatment selected.', evidence: [{ sourceId: source.id, season: 2014, crop: 'corn', role: 'yield' }], tasks: [{ id: 'check', title: 'Verify current field conditions', done: false }] }
+    const id = await f.workspace.saveInvestigation(input)
+    let saved = f.workspace.snapshot().investigations[0]!
+    assert.equal(saved.baseline, undefined); assert.equal(saved.season, undefined); assert.equal(saved.evidence[0]!.season, 2014)
+    const analysisId = await f.workspace.analyzeYield({ investigationId: id, sourceId: source.id, sheet: 'Sheet1', xColumn: 'X', yColumn: 'Y', valueColumn: 'Yield', unit: 'unknown', coordinateSystem: 'unknown' })
+    saved = f.workspace.snapshot().investigations[0]!
+    const analysis = saved.analyses[0]!
+    assert.equal(analysis.id, analysisId); assert.equal(analysis.validRows, 3); assert.equal(analysis.missingRows, 1); assert.equal(analysis.invalidRows, 2); assert.equal(analysis.duplicateLocations, 1); assert.equal(analysis.minimum, 0); assert.equal(analysis.pointMean, 10); assert.equal(analysis.unit, 'unknown'); assert.equal(saved.revision, 2)
+    await assert.rejects(f.workspace.saveInvestigation({ ...input, id, expectedRevision: 1 }), /changed/)
+    await f.workspace.saveInvestigation({ ...saved, expectedRevision: saved.revision, tasks: [{ ...saved.tasks[0]!, done: true, assignee: 'Farm helper', dueDate: '2027-04-01' }] })
+    saved = f.workspace.snapshot().investigations[0]!
+    assert.equal(saved.revision, 3); assert.equal(saved.analyses.length, 1); assert.equal(saved.tasks[0]!.done, true); assert.equal(saved.tasks[0]!.assignee, 'Farm helper'); assert.equal(saved.snapshots.length, 2)
+    const previous = await f.workspace.readArtifact(saved.snapshots[0]!.artifactId)
+    assert.equal(JSON.parse(previous.bytes.toString()).investigation.tasks[0].done, false)
+    const reopened = await LearningWorkspace.open(options(join(f.home, 'learning')), f.farm)
+    assert.equal(reopened.snapshot().investigations[0]!.analyses[0]!.points.length, 3); await reopened.dispose()
+    const trial = await f.workspace.draftTrial({ fieldId: 'real-field', investigationId: id, sourceIds: [source.id], question: input.question, baseline: 'Farmer-reviewed current practice', alternative: 'Farmer-selected alternative', constraints: 'Design review still required', measurements: 'Matched measurements', design: 'exploratory', replicates: 1 })
+    assert.equal(f.workspace.snapshot().trials.find(t => t.id === trial)!.investigationId, id)
+  } finally { await f.dispose() }
+})
+
+test('opening a v1 learning index preserves an exact backup and retains prior records', async () => {
+  const f = await fixture()
+  try {
+    const id = await f.workspace.createDemo(); await f.workspace.setMonitorActive(id, false)
+    const { methods: _methods, workspace: _workspace, storageError: _error, ...state } = f.workspace.snapshot()
+    const original = JSON.stringify({ ...state, version: 1 }); await writeFile(join(f.home, 'learning', 'index.json'), original)
+    const reopened = await LearningWorkspace.open(options(join(f.home, 'learning')), f.farm)
+    const { readFile } = await import('node:fs/promises')
+    assert.equal(await readFile(join(f.home, 'learning', 'index.json.v1.backup'), 'utf8'), original)
+    assert.equal(await readFile(join(f.home, 'learning', 'index.json'), 'utf8'), original)
+    assert.equal(reopened.snapshot().version, 2); assert.equal(reopened.snapshot().monitors[0]!.id, id); assert.equal(reopened.snapshot().investigations.length, 0)
+    await reopened.dispose()
+  } finally { await f.dispose() }
+})
+test('the public example imports attributed originals and an incomplete question without replacing the farmer baseline', async () => {
+  const f = await fixture()
+  try {
+    const baseline = f.farm.snapshot().farm
+    const id = await f.workspace.createPublicCase(), records = f.farm.snapshot(), investigation = f.workspace.snapshot().investigations[0]!
+    assert.deepEqual(records.farm, baseline); assert.equal(investigation.id, id); assert.equal(investigation.baseline, undefined); assert.equal(records.sources.length, 3)
+    assert.equal(records.sources.find(s => s.mediaType)?.mediaType, 'image/jpeg'); assert.equal(investigation.evidence.filter(e => e.season === 2014).length, 2)
+    const source = records.sources.find(s => s.kind === 'spreadsheet')!
+    await f.workspace.analyzeYield({ investigationId: id, sourceId: source.id, sheet: 'Sheet1', xColumn: 'XCoord', yColumn: 'YCoord', valueColumn: 'YLD_VOL_DR', unit: 'bu/ac', coordinateSystem: 'unknown' })
+    const analysis = f.workspace.snapshot().investigations[0]!.analyses[0]!
+    assert.equal(analysis.validRows, 2984); assert.equal(analysis.missingRows, 0); assert.equal(analysis.minimum, 10.676); assert.ok(Math.abs(analysis.pointMean! - 117.06967037533512) < 1e-10)
+    assert.equal(await f.workspace.createPublicCase(), id); assert.equal(f.farm.snapshot().sources.length, 3)
+    assert.equal(f.workspace.snapshot().monitors.length, 0); assert.equal(f.workspace.snapshot().trials.length, 0)
+  } finally { await f.dispose() }
+})

@@ -1,0 +1,16 @@
+# Bilingual-pair consistency record for guide.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write docs/upgrade-guide/v0.2.2-rc.3/fieldwork-learning-index/guide.md
+/:
+  en: ddaa70884db5b52b
+  zh: 165db099bcbc8f31
+/fieldwork-learning-index:
+  en: 31d5ca1cbc7d5b65
+  zh: 98936e946e49f2ba
+/fieldwork-learning-index/change:
+  en: 813893f38b7f077d
+  zh: 2d5901dcd6961201
+/fieldwork-learning-index/migration:
+  en: 42ef82964c810916
+  zh: 1415c59cfc71ced8

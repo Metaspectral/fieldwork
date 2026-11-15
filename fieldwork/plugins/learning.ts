@@ -6,10 +6,14 @@ import type { Context } from '@deepseek-ai/cordis'
 import schema from '@deepseek-ai/schemastery'
 import { z } from 'zod'
 import type { FarmRecords } from './records.ts'
+import { investigationSchema, investigationInputSchema, yieldAnalysisInputSchema } from './investigation-types.ts'
+import { inspectYieldPoints } from './yield-analysis.ts'
 import { LearningError } from './learning-error.ts'
 import { loadMethods } from './methods.ts'
 import { DemoSatelliteProvider, EarthSearchProvider, type SatelliteProvider } from './satellite.ts'
-import { learningStateSchema, readFieldBoundary, boundarySchema, monitorInputSchema, scoutInputSchema, trialInputSchema, resultRowSchema, type Artifact, type LearningState, type LearningSnapshot, type MethodCard, type MonitorCheck, type Monitor } from './learning-types.ts'
+import { learningStateSchema, readFieldBoundary, boundarySchema, monitorInputSchema, scoutInputSchema, trialInputSchema, resultRowSchema, type Artifact,  type LearningSnapshot, type MethodCard, type MonitorCheck, type Monitor } from './learning-types.ts'
+const workspaceStateSchema = learningStateSchema.extend({ investigations: z.array(investigationSchema).default([]) })
+type WorkspaceState = z.infer<typeof workspaceStateSchema>
 const WEEK = 7 * 24 * 60 * 60 * 1000
 export interface LearningOptions { root: string; pollSeconds: number; checkTimeoutSeconds: number; scenesPerCheck: number }
 /** One runtime owns one workspace; tests can inject the provider and clock without global changes. */
@@ -23,11 +27,19 @@ export class LearningWorkspace {
   private readonly operations = new Set<Promise<unknown>>()
   private polling: Promise<void> | undefined
   private timer: ReturnType<typeof setTimeout> | undefined
-  private constructor(readonly options: LearningOptions, private state: LearningState, private methods: MethodCard[], private readonly farm: FarmRecords, private readonly live: SatelliteProvider, private readonly now: () => Date) {}
+  private constructor(readonly options: LearningOptions, private state: WorkspaceState, private methods: MethodCard[], private readonly farm: FarmRecords, private readonly live: SatelliteProvider, private readonly now: () => Date) {}
   static async open(options: LearningOptions, farm: FarmRecords, live: SatelliteProvider = new EarthSearchProvider(), now = () => new Date()) {
-    let state: LearningState
-    try { state = learningStateSchema.parse(JSON.parse(await readFile(join(options.root, 'index.json'), 'utf8'))) }
-    catch (error) { if (error instanceof Error && 'code' in error && error.code === 'ENOENT') state = learningStateSchema.parse({ version: 1, monitors: [], checks: [], scouts: [], trials: [], artifacts: [] }); else throw new LearningError('Could not open the learning workspace; existing files were preserved.', 'LEARNING_STORAGE', error) }
+    let state: WorkspaceState
+    try {
+      const original = await readFile(join(options.root, 'index.json'), 'utf8'), raw = JSON.parse(original)
+      if (raw?.version === 1) {
+        const legacy = workspaceStateSchema.extend({ version: z.literal(1) }).parse(raw)
+        try { await writeFile(join(options.root, 'index.json.v1.backup'), original, { flag: 'wx', mode: 0o600 }) }
+        catch (error) { if (!(error instanceof Error && 'code' in error && error.code === 'EEXIST')) throw error; if (await readFile(join(options.root, 'index.json.v1.backup'), 'utf8') !== original) throw new Error('A different learning migration backup already exists.') }
+        state = workspaceStateSchema.parse({ ...legacy, version: 2 })
+      } else state = workspaceStateSchema.parse(raw)
+    }
+    catch (error) { if (error instanceof Error && 'code' in error && error.code === 'ENOENT') state = workspaceStateSchema.parse({ version: 2, monitors: [], checks: [], scouts: [], trials: [], artifacts: [] }); else throw new LearningError('Could not open the learning workspace; existing files were preserved.', 'LEARNING_STORAGE', error) }
     const methods = await loadMethods(options.root)
     const workspace = new LearningWorkspace(options, state, methods, farm, live, now)
     if (state.checks.some(c => c.status === 'running')) await workspace.change(s => { for (const c of s.checks) if (c.status === 'running') { c.status = 'interrupted'; c.finishedAt = now().toISOString(); c.error = { code: 'RUNTIME_RESTARTED', message: 'The runtime stopped before this check completed. A new check can retry.' }; const m = s.monitors.find(m => m.id === c.monitorId); if (m?.active) m.nextCheckAt = now().toISOString() } })
@@ -35,11 +47,11 @@ export class LearningWorkspace {
   }
   snapshot(): LearningSnapshot { return structuredClone({ ...this.state, methods: this.methods, workspace: this.options.root, ...(this.storageError ? { storageError: this.storageError.message } : {}) }) }
   subscribe(listener: () => void): () => void { this.listeners.add(listener); return () => { this.listeners.delete(listener) } }
-  private change(transform: (state: LearningState) => void): Promise<void> {
+  private change(transform: (state: WorkspaceState) => void): Promise<void> {
     if (this.storageError) return Promise.reject(this.storageError)
     if (this.stopped) return Promise.reject(new LearningError('The learning workspace is stopping.', 'LEARNING_STORAGE'))
     const operation = this.queue.then(async () => {
-      const state = structuredClone(this.state); transform(state); const next = learningStateSchema.parse(state)
+      const state = structuredClone(this.state); transform(state); const next = workspaceStateSchema.parse(state)
       try { await mkdir(this.options.root, { recursive: true }); await writeFile(join(this.options.root, 'index.json.tmp'), JSON.stringify(next, null, 2), { mode: 0o600 }); await rename(join(this.options.root, 'index.json.tmp'), join(this.options.root, 'index.json')) }
       catch (error) { this.storageError = new LearningError('Learning storage could not be committed. Monitoring is stopped; inspect the workspace and restart before retrying.', 'LEARNING_STORAGE', error); for (const listener of this.listeners) listener(); throw this.storageError }
       this.state = next; for (const listener of this.listeners) listener()
@@ -164,6 +176,7 @@ export class LearningWorkspace {
   draftTrial(input: unknown): Promise<string> { return this.admit(() => this.draftTrialInternal(input)) }
   private async draftTrialInternal(input: unknown): Promise<string> {
     const value = trialInputSchema.parse(input), field = this.requireField(value.fieldId), farm = this.farm.snapshot()
+    if (value.investigationId && !this.state.investigations.some(i => i.id === value.investigationId && i.fieldId === value.fieldId)) throw new LearningError('Choose an investigation from this field.', 'LEARNING_INPUT')
     if (value.previousTrialId && !this.state.trials.some(t => t.id === value.previousTrialId && t.fieldId === value.fieldId)) throw new LearningError('Choose a previous comparison from this field.', 'LEARNING_INPUT')
     if (value.scoutId && !this.state.scouts.some(s => s.id === value.scoutId && s.fieldId === value.fieldId)) throw new LearningError('Choose a scouting note from this field.', 'LEARNING_INPUT')
     if (value.cornPlanId && !farm.cornPlans.some(p => p.id === value.cornPlanId && p.fieldId === value.fieldId && p.status === 'accepted')) throw new LearningError('Choose an accepted corn plan for this field.', 'LEARNING_INPUT')
@@ -191,6 +204,57 @@ export class LearningWorkspace {
     const files = [await this.artifact('harvest-results.csv', 'text/csv', 'block,baselineYield,alternativeYield\n' + value.rows.map(r => `${r.block},${r.baselineYield},${r.alternativeYield}`).join('\n') + '\n'), await this.artifact('learning.md', 'text/markdown', `# ${trial.question}\n\n## Observed comparison\n\nBaseline mean: ${baselineMean ?? 'unavailable'} ${value.unit}. Alternative mean: ${alternativeMean ?? 'unavailable'} ${value.unit}. Paired difference: ${results.meanDifference ?? 'unavailable'} ${value.unit}. ${value.rows.length}/${trial.replicates} planned blocks recorded. Descriptive summary only; no significance test or causal conclusion.\n\n## Interpretation and deviations\n\n${value.interpretation}\n\n## Farmer decision\n\n${value.farmerDecision}\n`), await this.artifact('summary.json', 'application/json', JSON.stringify({ method: trial.method, results }, null, 2))]
     await this.change(s => { const t = s.trials.find(t => t.id === value.id)!; if (t.status !== 'tracking') throw new LearningError('An outcome was already recorded; create a follow-up trial.', 'LEARNING_INPUT'); t.results = results; t.status = 'reviewed'; t.artifactIds.push(...files.map(f => f.id)); s.artifacts.push(...files) })
   }
+  /** Save a question before targets, quotes, geometry, or a treatment are known. */
+  saveInvestigation(input: unknown): Promise<string> { return this.admit(() => this.saveInvestigationInternal(input)) }
+  private async saveInvestigationInternal(input: unknown): Promise<string> {
+    const value = investigationInputSchema.parse(input); const field = this.requireField(value.fieldId)
+    const farm = this.farm.snapshot(), previous = value.id ? this.state.investigations.find(i => i.id === value.id) : undefined
+    if (value.id && !previous) throw new LearningError('Investigation not found.', 'LEARNING_INPUT')
+    if (previous && (value.expectedRevision !== previous.revision || previous.fieldId !== value.fieldId)) throw new LearningError('This investigation changed. Reload it before saving a revision.', 'LEARNING_INPUT')
+    if (new Set(value.evidence.map(e => e.sourceId)).size !== value.evidence.length || value.evidence.some(e => !farm.sources.some(s => s.id === e.sourceId))) throw new LearningError('Choose each existing source once.', 'LEARNING_INPUT')
+    if (new Set(value.tasks.map(t => t.id)).size !== value.tasks.length) throw new LearningError('Use a distinct task identity for each work item.', 'LEARNING_INPUT')
+    await this.refreshMethodsInternal(); const method = this.method('historical-yield'), id = previous?.id ?? randomUUID(), revision = (previous?.revision ?? 0) + 1, updatedAt = this.now().toISOString()
+    const record = { ...value, id, revision, method: method.ref, createdAt: previous?.createdAt ?? updatedAt, updatedAt, analyses: previous?.analyses ?? [], artifactIds: previous?.artifactIds ?? [], snapshots: previous?.snapshots ?? [] }
+    const context = { investigation: record, field, sources: value.evidence.map(e => ({ ...e, sha256: farm.sources.find(s => s.id === e.sourceId)!.sha256 })), method }
+    const files = [await this.pin(method), await this.artifact('investigation.json', 'application/json', JSON.stringify(context, null, 2)), await this.artifact('investigation.md', 'text/markdown', `# ${value.question}\n\nField: ${field.name}. Season: ${value.season ?? 'unknown'}.\n\n## Baseline\n\n${value.baseline || 'Not documented yet.'}\n\n${value.notes}\n\n## Next work\n\n${value.tasks.map(t => `- [${t.done ? 'x' : ' '}] ${t.title}${t.assignee ? ` — ${t.assignee}` : ''}${t.dueDate ? ` (${t.dueDate})` : ''}`).join('\n')}\n`)]
+    await this.change(s => {
+      const index = s.investigations.findIndex(i => i.id === id)
+      if (previous && s.investigations[index]?.revision !== value.expectedRevision) throw new LearningError('This investigation changed. Reload before saving.', 'LEARNING_INPUT')
+      const saved = investigationSchema.parse({ ...record, artifactIds: [...record.artifactIds, ...files.map(f => f.id)], snapshots: [...record.snapshots, { revision, artifactId: files[1]!.id }] })
+      if (index < 0) s.investigations.push(saved); else s.investigations[index] = saved
+      s.artifacts.push(...files)
+    }); return id
+  }
+  /** Inspect a selected worksheet using explicit columns and units; retain every qualified point. */
+  analyzeYield(input: unknown): Promise<string> { return this.admit(async () => {
+    const value = yieldAnalysisInputSchema.parse(input), investigation = this.state.investigations.find(i => i.id === value.investigationId), source = this.farm.snapshot().sources.find(s => s.id === value.sourceId)
+    const evidence = investigation?.evidence.find(e => e.sourceId === value.sourceId)
+    if (!investigation || !evidence || source?.kind !== 'spreadsheet') throw new LearningError('Attach a spreadsheet to this investigation before inspecting its yield points.', 'LEARNING_INPUT')
+    await this.farm.original(source.id)
+    const result = inspectYieldPoints(source.sections, value), id = randomUUID(), createdAt = this.now().toISOString()
+    const analysis = { ...value, ...result, id, createdAt, sourceHash: source.sha256, ...(evidence.season ? { season: evidence.season } : {}), ...(evidence.crop ? { crop: evidence.crop } : {}) }
+    const files = [await this.artifact('yield-quality.json', 'application/json', JSON.stringify({ ...analysis, limits: 'Unweighted monitor-point summaries. Coordinate and unit labels are user-reviewed metadata, not inferred. No area-weighted yield, cause, persistence, or treatment effect is calculated.' }, null, 2)), await this.artifact('yield-points.csv', 'text/csv', 'x,y,yield\n' + result.points.map(p => p.join(',')).join('\n') + '\n')]
+    await this.change(s => { const current = s.investigations.find(i => i.id === investigation.id)!; if (current.revision !== investigation.revision) throw new LearningError('The investigation changed during analysis. Reopen it and retry.', 'LEARNING_INPUT'); current.revision++; current.updatedAt = createdAt; current.analyses.push({ ...analysis, artifactIds: files.map(f => f.id) }); current.artifactIds.push(...files.map(f => f.id)); s.artifacts.push(...files) }); return id
+  }) }
+  /** Import an attributed public case after review without changing the farmer's baseline. */
+  createPublicCase(): Promise<string> { return this.admit(async () => {
+    const root = new URL('../examples/beltsville/', import.meta.url), fieldId = 'fieldwork-example-usda-barc-1-7'
+    const manifest = z.object({ doi: z.url(), areaHa: z.number().positive(), files: z.array(z.object({ filename: z.enum(['yield-points-2014.csv', 'management-history.pdf', 'yield-map-2014.jpg']), title: z.string(), role: z.enum(['yield', 'management', 'map']), season: z.number().optional(), crop: z.string().optional(), sha256: z.string() })) }).parse(JSON.parse(await readFile(new URL('manifest.json', root), 'utf8')))
+    const marker = 'Public USDA BARC example; current crop and farmer reasoning are unknown.'
+    const existingField = this.farm.snapshot().fields.find(f => f.id === fieldId)
+    if (existingField && !existingField.notes.includes(marker)) throw new LearningError('The public example field identity is already used. Existing records were preserved.', 'LEARNING_INPUT')
+    const existing = this.state.investigations.find(i => i.fieldId === fieldId)
+    if (existing) return existing.id
+    if (!existingField) await this.farm.change(s => { s.fields.push({ id: fieldId, name: 'USDA BARC · Central Farm 1-7', areaHa: manifest.areaHa, evidence: 'measured', years: { '2014': { crop: 'corn', notes: ['Historical yield-monitor observations.'] } }, notes: [marker, 'Reported 28.95 acres; management report dated July 2, 2025. Later silage-corn and rye records do not establish 2014 management or the current crop.', manifest.doi] }) })
+    const evidence = []
+    for (const file of manifest.files) {
+      const bytes = await readFile(new URL(file.filename, root))
+      if (createHash('sha256').update(bytes).digest('hex') !== file.sha256) throw new LearningError('A bundled public source failed its integrity check.', 'LEARNING_STORAGE')
+      const source = this.farm.snapshot().sources.find(s => s.sha256 === file.sha256 && s.fieldId === fieldId) ?? await this.farm.importSource(bytes, { title: file.title, filename: file.filename, origin: manifest.doi, evidence: 'measured', scope: 'Public-domain USDA archive. Historical observations only; not current field conditions or treatment results. Later management history covers separate seasons.', fieldId, ...(file.season ? { season: file.season } : {}) })
+      evidence.push({ sourceId: source.id, role: file.role, ...(file.season ? { season: file.season } : {}), ...(file.crop ? { crop: file.crop } : {}) })
+    }
+    return this.saveInvestigationInternal({ fieldId, season: 2014, question: 'Do the low-yield bands recur in later corn seasons, and what should we check before changing practice?', notes: '## Observed\nThe published 2014 interpolated grain-yield map shows spatial bands. The cleaned CSV retains 2,984 yield-monitor points. These are historical observations, not treatment replicates or present crop conditions.\n\n## Unknown\nCurrent crop, current management, farmer reasoning, confirmed boundary, calibration details and a suitable change remain unknown. Later management records are separate seasons. Compare matched corn seasons and check competing explanations before selecting a treatment.', evidence, tasks: [{ id: randomUUID(), title: 'Verify yield units, coordinate system, calibration and moisture correction', done: false }, { id: randomUUID(), title: 'Find a matched later corn season and compare coverage and management', done: false }, { id: randomUUID(), title: 'Confirm current crop and field conditions before choosing a change', done: false }] })
+  }) }
   /** Provision a clearly fictional, local-only example after explicit owner approval. */
   createDemo(): Promise<string> { return this.admit(() => this.createDemoInternal()) }
   private async createDemoInternal(): Promise<string> {

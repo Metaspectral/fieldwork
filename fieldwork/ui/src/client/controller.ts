@@ -4,13 +4,14 @@ import type { LearningSnapshot } from '../../../plugins/learning-types.ts'
 import type { FarmState } from '../../../plugins/records.ts'
 /** Owner data and command results returned by the authenticated Host. */
 export interface Reply { state: FarmState; learning: LearningSnapshot; createdId?: string; comparison?: FarmState['comparisons'][number]; preview?: { previewId: string; summary: FarmState['summaries'][number] } }
+export interface FieldSelection { fieldId: string | null; season: number | null; investigationId: string | null }
 /** Shared page load and mutation state. */
-export interface PageState { data: FarmState | null; learning: LearningSnapshot | null; busy: boolean; error: string | null; saved: boolean }
+export interface PageState { selection: FieldSelection; data: FarmState | null; learning: LearningSnapshot | null; busy: boolean; error: string | null; saved: boolean }
 /** Native injected callbacks and observable; the renderer supplies the hook. */
-export interface Face { hooks: { records: ReturnType<typeof createSnapshotStore<PageState>> }; section: 'farm' | 'community' | 'experiments' | 'library' | 'corn' | 'learning'; refresh(): Promise<void>; perform(command: Record<string, unknown>): Promise<Reply> }
+export interface Face { hooks: { records: ReturnType<typeof createSnapshotStore<PageState>> }; section: 'farm' | 'community' | 'experiments' | 'library' | 'corn' | 'learning'; selectContext(value: Partial<FieldSelection>): void; navigate(section: Face['section']): void; refresh(): Promise<void>; perform(command: Record<string, unknown>): Promise<Reply> }
 /** Own transport lifetime and publish only authoritative server snapshots. */
 export class PageController {
-  readonly store = createSnapshotStore<PageState>({ data: null, learning: null, busy: false, error: null, saved: false })
+  readonly store = createSnapshotStore<PageState>({ selection: { fieldId: null, season: null, investigationId: null }, data: null, learning: null, busy: false, error: null, saved: false })
   private readonly abort = new AbortController()
   private readonly events: EventSource
   private sequence = 0
@@ -26,6 +27,7 @@ export class PageController {
     if (!result.ok) throw new Error(response.error ?? 'Could not load farm records.')
     return response as Reply
   }
+  selectContext(value: Partial<FieldSelection>): void { this.store.update(s => { s.selection = { ...s.selection, ...value } }) }
   async refresh(): Promise<void> {
     const sequence = ++this.sequence
     try { const response = await this.request(); if (sequence === this.sequence) this.store.update(s => { s.data = response.state; s.learning = response.learning; s.error = null }) }

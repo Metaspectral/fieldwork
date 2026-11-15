@@ -59,3 +59,5 @@
 ## 更新图库
 
 在仓库根目录运行 `pnpm run fieldwork:build`，然后运行 `FIELDWORK_BROWSER_CHANNEL=chrome node --test fieldwork/ui/browser.test.mjs`。使用 Playwright 已安装的浏览器时省略频道变量。检查 `.artifacts/native-pages/`，将这七个命名 PNG 复制到此目录。截图不得包含私人运行时记录及认证链接。
+
+[Beltsville 调查：原始文件、产量点质量及本地任务](investigations/README.zh.md)。

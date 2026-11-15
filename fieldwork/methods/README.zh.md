@@ -33,3 +33,13 @@ NDVI 为观察背景。作物阶段及田间条件影响比较；窄试验条带
 `pnpm --filter @fieldwork/plugins test` 覆盖调度、无数据区别、取消、重启恢复、文件、证据关联及描述性结果。`node --test fieldwork/ui/learning.browser.test.mjs` 验证原生农户流程并捕获忽略的截图。`FIELDWORK_SATELLITE_TEST=1 node --import tsx/esm --test fieldwork/plugins/satellite.live.test.ts` 检查公开参考影像，不需凭据或模型，文件置于 `.artifacts/live-satellite`。
 
 2026 年 7 月 30 日的公开参考场景产生 11705 个有效多边形像素及平均 NDVI 0.36178865076947253。独立 rasterio/GDAL 计算的像素数相同，均值在 1e-10 内一致。[应用结果](watch-field/qualification/reference-result.json)和[独立结果](watch-field/qualification/independent-result.json)记录这项软件检查。它不是用户农场观察，也不代表跨场景和地区的广泛科学验证。
+
+## 选择处理前先调查
+
+[调查重复出现的低产区域](historical-yield/SKILL.md)保存田块、可选的问题季节、已知的当前做法、各来源的季节及作物、笔记和带可选负责人及截止日期的本地任务。缺少报价、目标、当前作物或几何不会阻止保存调查。[Beltsville 公开示例](../examples/beltsville/README.zh.md)提供经过明确审核的起点，不替换农户做法。
+
+以分页表格、PDF 页面文本或原始 PNG/JPEG 地图查看关联证据。选择表格单元格以获取精确引用。保存质量检查前明确选择 X、Y、产量列、单位和坐标系标签。缺失值不变成零。点图保持坐标纵横比例；大图显示抽样点，汇总使用所有有效行。分析文件保留原始来源哈希及描述性局限，不自动对齐跨季数据或计算持续性。
+
+每次调查保存固定可读的 JSON/Markdown 快照和方法包。编辑检查打开表单时记录的版本，拒绝过期编辑。分析及本地任务修改留在同一调查中，后续试验草稿保留调查身份和所选证据。Experiments 显示这些共享比较及较早的简易试验记录。负责人和日期只是本地记录，不发送邀请或通知。
+
+学习索引使用第 2 版。打开第 1 版索引时，将原始字节保留至 `index.json.v1.backup`，读取此前的监测、巡田及试验记录，并将调查默认为空。下次成功写入提交第 2 版。备份冲突时阻止打开而不覆盖。工作空间应使用当前运行环境；旧读取器拒绝第 2 版。新的可选来源元数据记录田块、季节和图片媒体类型，不改变原件字节。
