@@ -8,12 +8,13 @@
 
 ## 原生插件
 
-应用就是 Harness 本身，使用其聊天、工具卡片、审批、会话和预设设置。[UI 插件](ui/README.zh.md)在现有聊天和导航旁注册原生 My farm、Community、Experiments、Source library 和 Corn planning 主面板。
+应用就是 Harness 本身，使用其聊天、工具卡片、审批、会话和预设设置。[UI 插件](ui/README.zh.md)在现有聊天和导航旁注册原生 My farm、Community、Experiments、Source library、Corn planning 和 Field learning 主面板。
 
 - **Farm setup：**选择模型后自动开始的内置入门流程，可暂停、继续及明确结束。参见[入门指南](onboarding/README.zh.md)。
 - **My Farm：**读取和更新当前做法及农场背景。
 - **Community：**浏览本地演示知识、私下改编方法，并在分享前预览选定摘要。
 - **Crop Experiments：**创建小规模试验草稿、调整基线、批准跟踪并记录观察。
+- **Field learning：**发现文件化方法，每周检查 Sentinel-2 数据可用性，调查观察并保留已审核的玉米比较。参阅[方法指南](methods/README.zh.md)。
 - **Source library：**保留原始表格、PDF、网页、公开 HTTPS 快照和农户笔记，并提供准确引用。
 - **Corn planning：**保留原做法，比较部分田块播种试验，审核带版本的预算并记录观察。参阅[方法及证据边界](docs/corn-method.md)。
 - **Seed Costs：**比较采购报价，并可选择保存计算。
@@ -32,6 +33,6 @@
 
 ## 范围
 
-社区是本地演示动态，不是在线社交服务。尚无实时天气、卫星流水线、托管运行或手机配对。浏览器测试覆盖原生页面。真实 Harness 对话也通过本地 [Codex 订阅桥接](codex/README.zh.md)使用 `gpt-6.1-sol` 完成测试。这验证读取比较和带引用的玉米预算场景，并不证明整体农艺质量。云模型会收到发送给它的上下文。
+社区是本地演示动态，不是在线社交服务。明确启用田块后可运行 Sentinel-2 实时检查；尚无实时天气、托管运行或手机配对。浏览器测试覆盖原生页面。真实 Harness 对话也通过本地 [Codex 订阅桥接](codex/README.zh.md)使用 `gpt-6.1-sol` 完成测试。这验证读取比较和带引用的玉米预算场景，并不证明整体农艺质量。云模型会收到发送给它的上下文。
 
 已移除弃用的原型和独立 `/fieldwork` 应用。原始交接文档作为历史背景保留在 Git 中；其界面建议不约束原生插件实现。定制框架时保留上游许可和第三方声明。

@@ -1,0 +1,19 @@
+# Bilingual-pair consistency record for README.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write fieldwork/methods/README.md
+/field-learning-methods:
+  en: 6359313114aca29b
+  zh: ccecb972ed95e6fc
+/field-learning-methods/use-the-workflow:
+  en: e5d758faf88aa117
+  zh: 4be12f821602b5aa
+/field-learning-methods/monitoring-semantics:
+  en: 89a59ddabb448331
+  zh: e8c7ec7f724ff801
+/field-learning-methods/files-and-configuration:
+  en: ec126ce3956aa564
+  zh: 9b8ef8043b6ed35b
+/field-learning-methods/verification:
+  en: 593186c92e717a4c
+  zh: 96076f259a68cd22

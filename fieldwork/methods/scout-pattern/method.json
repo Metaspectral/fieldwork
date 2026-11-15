@@ -1,0 +1,28 @@
+{
+  "id": "scout-pattern",
+  "version": 1,
+  "title": "Investigate a pattern",
+  "question": "What is happening on the ground, and which explanations fit?",
+  "stage": "investigate",
+  "effort": "A field visit or existing observations; a short farmer-reviewed note.",
+  "needs": [
+    "A field question",
+    "Ground observations or supporting documents"
+  ],
+  "produces": [
+    "Scouting note",
+    "Competing explanations",
+    "A next question"
+  ],
+  "limits": "Observations and hypotheses remain distinct. A pattern does not confirm a nutrient, pest, or water diagnosis.",
+  "sources": [
+    {
+      "title": "Innovative Farmers field labs",
+      "url": "https://www.innovativefarmers.org/about-us/what-is-a-field-lab"
+    },
+    {
+      "title": "SARE on-farm research",
+      "url": "https://www.sare.org/publications/how-to-conduct-research-on-your-farm-or-ranch/introduction-6/what-is-on-farm-research/"
+    }
+  ]
+}

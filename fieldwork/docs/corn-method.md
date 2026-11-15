@@ -19,7 +19,7 @@ Combined establishment includes germination and subsequent field losses. Do not 
 
 ## Evidence and review
 
-Inputs carry one of six labels: farmer-reported, measured, regional, assumed, missing, or demo. These labels describe provenance, not scientific certification. Measured and regional inputs need citations before acceptance. Missing inputs block acceptance. Demo or missing sources cannot support an accepted plan for a real field. Sources retain original identity, capture time, content hash, scope, and exact cell, page, or block locators.
+Inputs carry one of six labels: farmer-reported, measured, regional, assumed, missing, or demo. These labels describe the source of each input, not scientific certification. Measured and regional inputs need citations before acceptance. Missing inputs block acceptance. Demo or missing sources cannot support an accepted plan for a real field. Sources retain original identity, capture time, content hash, scope, and exact cell, page, or block locators.
 
 Spreadsheets retain formula text and cached results; import does not recalculate them. HTML is extracted as inert text. PDFs extract text by page; image-only pages need OCR. Public HTTPS capture does not support login-only sites, arbitrary ports, IPv6-only hosts, or cross-origin redirects. The farmer can import a saved original instead.
 

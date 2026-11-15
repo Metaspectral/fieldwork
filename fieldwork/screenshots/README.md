@@ -6,6 +6,8 @@ Actual captures of the native DeepSeek Harness plugins with the Fieldwork starte
 
 Captured on 2026-11-14 using the isolated browser workflow in `fieldwork/ui/browser.test.mjs`. Desktop captures use 1440 × 1000; the phone view uses 390 × 844. The test consumes no model subscription.
 
+See [field learning](field-learning/README.md): method discovery, availability checks, scouting, and reviewed comparisons.
+
 See [corn planning and the source library](corn-and-evidence/README.md): original spreadsheet citations, reviewed seed budgets, and revision-linked observations.
 
 See the [built-in onboarding flow](built-in-onboarding/README.md): model setup, automatic first question, and pause/resume controls.

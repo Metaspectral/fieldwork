@@ -56,10 +56,10 @@ export async function extractSource(bytes: Uint8Array, input: SourceInput) {
       return (node.childNodes ?? []).map(n => visit(n as typeof node)).join(' ') + (['p', 'h1', 'h2', 'h3', 'li', 'tr', 'article'].includes(node.nodeName) ? '\n' : '')
     }
     visit(tree).split(/\n/).map(t => t.replace(/\s+/g, ' ').trim()).filter(Boolean).forEach((text, i) => add(`block ${i + 1}`, text))
-  } else if (['txt', 'md'].includes(suffix ?? '')) {
+  } else if (['txt', 'md', 'json', 'geojson'].includes(suffix ?? '')) {
     kind = 'knowledge'
     Buffer.from(bytes).toString('utf8').split(/\n\s*\n/).filter(t => t.trim()).forEach((text, i) => add(`block ${i + 1}`, text.trim()))
-  } else throw new FarmError('Supported originals: XLSX, XLS, CSV, ODS, PDF, HTML, TXT, and Markdown.', 'FARM_INPUT')
+  } else throw new FarmError('Supported originals: XLSX, XLS, CSV, ODS, PDF, HTML, JSON, GeoJSON, TXT, and Markdown.', 'FARM_INPUT')
   if (!sections.some(s => s.text.trim())) throw new FarmError('No readable text or cells found. Scanned PDFs need OCR before import.', 'FARM_INPUT')
   return sourceSchema.parse({ id: randomUUID(), ...meta, kind, sha256: createHash('sha256').update(bytes).digest('hex'), capturedAt: new Date().toISOString(), sections })
 }

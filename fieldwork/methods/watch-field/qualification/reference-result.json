@@ -1,0 +1,27 @@
+{
+  "publicReference": true,
+  "status": "available",
+  "item": "S2A_T14SLH_20260730T174227_L2A",
+  "validPixels": 11705,
+  "totalPixels": 11705,
+  "meanNdvi": 0.36178865076947253,
+  "usableFraction": 1,
+  "artifacts": [
+    {
+      "filename": "source-item.json",
+      "sha256": "ffd0479080e2e0e01b96a54650049e4e384a8819030a24d320f66b85ddf0e449"
+    },
+    {
+      "filename": "cropped-pixels.csv",
+      "sha256": "225db78512e4dea6d84c4e61d1a01d69f9419f299677de9eb0b8f47e50be33ca"
+    },
+    {
+      "filename": "observation.json",
+      "sha256": "c2e7f216d3dfdb24457faf0c392b0a7d2f63855f4c95dc2d2d419dc8db732463"
+    },
+    {
+      "filename": "check.json",
+      "sha256": "ddafcf3e29318531d1948a43657b2904b2e76c7ed093dfa74bd6d0e35bc9bc8f"
+    }
+  ]
+}

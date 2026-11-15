@@ -1,0 +1,70 @@
+.root > * { max-width: 1120px; }
+.root h2, .root h3, .root strong { font-weight: 500; }
+.root h3 { font-size: 15px; }
+.journey { display: grid; grid-template-columns: repeat(4, 1fr); border-block: 1px solid var(--dsw-alias-border-l3); padding: 16px 0; gap: 16px; margin-bottom: 28px; color: var(--dsw-alias-label-secondary); }
+.journey span + span { border-left: 1px solid var(--dsw-alias-border-l3); padding-left: 16px; }
+.discovery { margin-bottom: 28px; }
+.discovery > summary { font-size: 17px; font-weight: 500; cursor: pointer; }
+.methodGrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-top: 20px; }
+.methodCard { padding: 22px; border: 1px solid var(--dsw-alias-border-l3); border-radius: 12px; background: var(--dsw-alias-bg-layer-1); display: flex; flex-direction: column; }
+.methodCard h2 { margin-bottom: 8px; }
+.methodCard > details { margin-top: auto; }
+.methodCard ul { padding-left: 18px; line-height: 1.7; }
+.eyebrow { color: var(--fieldwork-accent); font-size: 12px; margin: 0 0 8px; }
+.muted { color: var(--dsw-alias-label-secondary); }
+.empty { border-block: 1px solid var(--dsw-alias-border-l3); padding: 28px 0; display: flex; align-items: center; gap: 32px; justify-content: space-between; }
+.empty > div { max-width: 720px; }
+.empty > button { flex: none; }
+.monitorHeader { display: flex; justify-content: space-between; align-items: flex-start; gap: 28px; margin-bottom: 14px; }
+.monitorHeader h2 { margin: 0 0 8px; font-size: 22px; }
+.monitorHeader p { max-width: 680px; }
+.monitorControls { flex: none; max-width: 350px; }
+.scheduleLine { display: flex; flex-wrap: wrap; gap: 10px 28px; color: var(--dsw-alias-label-secondary); font-size: 12px; padding: 14px 0; border-top: 1px solid var(--dsw-alias-border-l3); margin-bottom: 16px; }
+.observationGrid { display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(280px, 1fr); gap: 20px; align-items: stretch; }
+.visualCard, .historyCard, .trendCard { border: 1px solid var(--dsw-alias-border-l3); border-radius: 12px; background: var(--dsw-alias-bg-layer-1); padding: 24px; min-width: 0; }
+.cardHeading { display: flex; gap: 16px; align-items: baseline; justify-content: space-between; }
+.cardHeading span { color: var(--dsw-alias-label-secondary); }
+.raster { width: 100%; height: 320px; display: block; background: var(--dsw-alias-bg-layer-2); border-radius: 8px; }
+.legend { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; font-size: 12px; margin: 12px 0 20px; color: var(--dsw-alias-label-secondary); }
+.gradient { height: 8px; width: 120px; background: linear-gradient(90deg, #ad9576, #c5bb81, #b5c27e, #83a868, #4f8356, #28543b); border-radius: 4px; }
+.metrics { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; padding: 16px 0; border-block: 1px solid var(--dsw-alias-border-l3); }
+.metrics div { display: flex; flex-direction: column; gap: 8px; }
+.metrics span { font-size: 12px; color: var(--dsw-alias-label-secondary); }
+.metrics strong { font-size: 23px; font-variant-numeric: tabular-nums; }
+.noImage { padding: 64px 28px; text-align: center; color: var(--dsw-alias-label-secondary); background: var(--dsw-alias-bg-layer-2); border-radius: 8px; }
+.checkList { list-style: none; padding: 0; margin: 24px 0 0; }
+.checkList li { display: flex; gap: 12px; margin-bottom: 24px; }
+.checkList time { display: block; font-size: 12px; margin-top: 6px; color: var(--dsw-alias-label-secondary); }
+.checkList p { font-size: 12px; margin: 8px 0; }
+.statusDot { margin-top: 5px; width: 8px; height: 8px; border-radius: 50%; background: var(--dsw-alias-label-secondary); flex: none; }
+.available { background: var(--fieldwork-accent); }
+.trendCard { margin-top: 20px; }
+.trend { display: block; width: 100%; max-height: 180px; }
+.learningRecords { margin-top: 36px; }
+.noteCard { border-block: 1px solid var(--dsw-alias-border-l3); padding: 22px 0; margin-bottom: 20px; }
+.noteCard h3 { margin: 0 0 12px; }
+.trialCard { border: 1px solid var(--dsw-alias-border-l3); border-radius: 12px; padding: 24px; margin-bottom: 20px; background: var(--dsw-alias-bg-layer-1); }
+.blocks { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 16px; margin: 24px 0 12px; }
+.blocks > div > span { display: block; font-size: 12px; color: var(--dsw-alias-label-secondary); margin-bottom: 8px; }
+.blocks > div > div { display: grid; grid-template-columns: 1fr 1fr; min-height: 76px; }
+.blocks > div > div > span { padding: 12px 8px; border: 1px solid var(--dsw-alias-border-l3); overflow-wrap: anywhere; }
+.baselineStrip { background: var(--dsw-alias-bg-layer-2); }
+.alternativeStrip { background: var(--fieldwork-accent-soft); }
+.fileLinks { margin: 16px 0; font-size: 12px; color: var(--dsw-alias-label-secondary); }
+.fileLinks summary { cursor: pointer; }
+.fileLinks ul { padding-left: 18px; line-height: 1.9; }
+.instructions { white-space: pre-wrap; overflow-wrap: anywhere; font: inherit; font-size: 14px; line-height: 1.7; }
+.workspace { margin-top: 36px; padding-top: 24px; border-top: 1px solid var(--dsw-alias-border-l3); }
+.workspace code { overflow-wrap: anywhere; }
+.workspace li { margin-bottom: 14px; }
+.workspace li code { display: block; margin-top: 4px; }
+.yieldFigure { margin: 24px 0; padding-block: 20px; border-block: 1px solid var(--dsw-alias-border-l3); }
+.yieldFigure figcaption { font-size: 15px; font-weight: 500; margin-bottom: 18px; }
+.yieldRow { display: grid; grid-template-columns: 150px minmax(0, 1fr) 70px; gap: 16px; align-items: center; margin-bottom: 16px; }
+.yieldRow strong { text-align: right; font-variant-numeric: tabular-nums; }
+.yieldTrack { height: 24px; background: var(--dsw-alias-bg-layer-2); border-radius: 4px; overflow: hidden; }
+.yieldBaseline, .yieldAlternative { height: 100%; min-width: 1px; }
+.yieldBaseline { background: var(--dsw-alias-label-secondary); }
+.yieldAlternative { background: var(--fieldwork-accent); }
+@media (max-width: 1000px) { .methodGrid { grid-template-columns: minmax(0, 1fr); } .observationGrid { grid-template-columns: minmax(0, 1fr); } .monitorHeader { flex-wrap: wrap; } .empty { align-items: flex-start; flex-direction: column; gap: 12px; } }
+@media (max-width: 600px) { .journey { gap: 8px; font-size: 12px; } .journey span + span { padding-left: 8px; } .metrics strong { font-size: 20px; } .yieldRow { grid-template-columns: 100px minmax(0, 1fr) 55px; gap: 10px; } .visualCard, .historyCard, .trendCard, .trialCard { padding: 18px; } }

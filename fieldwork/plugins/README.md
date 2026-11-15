@@ -31,6 +31,8 @@ Records are saved in `$DSH_HOME/fieldwork-native/records.v1.json`; they are inde
 
 Community is a local feed shared by devices accessing this owner runtime. There is no online audience, live weather, Sentinel-2 execution, hosted runtime, or phone pairing. Preview text is not automatically anonymized. Summary construction does not attach raw observations or the farm-record object. It includes the selected title, takeaway, baseline, change, author, and method source; copied method text can contain farm details and needs review. Reviewed previews are immutable and expire on restart or when the in-memory preview limit is reached.
 
+The [learning method guide](../methods/README.md) describes the file-backed method packages, public Sentinel-2 checker, and linked scouting and comparison tools.
+
 ## Checks
 
 ```sh

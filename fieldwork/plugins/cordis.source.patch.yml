@@ -4,6 +4,10 @@
       name: './records.ts'
       config:
         file: !!js process.getBuiltinModule('node:path').join(process.env.DSH_HOME || process.getBuiltinModule('node:path').join(process.getBuiltinModule('node:os').homedir(), '.dsh'), 'fieldwork-native', 'records.v1.json')
+    - id: fieldwork-learning
+      name: './learning.ts'
+      config:
+        root: !!js process.getBuiltinModule('node:path').join(process.env.DSH_HOME || process.getBuiltinModule('node:path').join(process.getBuiltinModule('node:os').homedir(), '.dsh'), 'fieldwork-workspace', 'learning')
     - id: fieldwork-preset
       name: './preset.ts'
     - id: fieldwork-onboarding

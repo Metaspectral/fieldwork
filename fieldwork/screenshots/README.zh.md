@@ -6,6 +6,8 @@
 
 于 2026-11-14 使用 `fieldwork/ui/browser.test.mjs` 中的隔离浏览器流程捕获。桌面截图为 1440 × 1000；手机视图为 390 × 844。测试不消耗模型订阅。
 
+参见[田间学习](field-learning/README.zh.md)：方法发现、数据可用性检查、巡田及已审核比较。
+
 参见[玉米规划及来源库](corn-and-evidence/README.zh.md)：原始表格引用、经过审核的种子预算及关联版本的观察。
 
 参见[内置入门流程](built-in-onboarding/README.zh.md)：模型设置、自动首问及暂停和继续控件。
