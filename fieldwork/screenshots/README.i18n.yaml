@@ -3,8 +3,8 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write fieldwork/screenshots/README.md
 /fieldwork-screenshots:
-  en: 0fce56ad2faf5932
-  zh: a285437809f3807f
+  en: 927e6cc4dd9d401c
+  zh: 2b10f2873e324785
 /fieldwork-screenshots/my-farm:
   en: 52f2f3ee28c58608
   zh: cfe0b9e14cb489bd
@@ -27,5 +27,5 @@
   en: 691967b0fcb3d1a4
   zh: 638db534a40c3630
 /fieldwork-screenshots/refresh-the-gallery:
-  en: c6d997731b4d0b53
-  zh: 36ff167a29aac189
+  en: edab52f217d54c9e
+  zh: ebb08a84903a2260

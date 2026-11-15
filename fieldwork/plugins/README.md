@@ -31,9 +31,11 @@ Fieldwork follows the [trust guideline](TRUST.md): be useful first and earn trus
 
 ## Local records and limits
 
-Records are saved in `$DSH_HOME/fieldwork-native/records.v1.json`; they are independent of the deleted mockup data. Run one process per record file. Changes are serialized and committed by atomic replacement. Missing files start a clearly fictional demo farm; invalid existing files fail rather than reset. Tracking does not approve agronomic treatment or schedule physical work.
+Records are saved in `$DSH_HOME/fieldwork-native/records.v1.json`; they are independent of the deleted mockup data. The file now contains schema v2; valid v1 files receive a `.v1.backup` before migration. Built-in onboarding corrections and field notes use this same record owner. Original source bytes live in the adjacent `originals` directory. See the [migration guide](../../docs/upgrade-guide/v0.2.2-rc.3/fieldwork-shared-records/guide.md). Run one process per record file. Changes are serialized and committed by atomic replacement. Missing files start a clearly fictional demo farm; invalid existing files fail rather than reset. Tracking does not approve agronomic treatment or schedule physical work.
 
 Community is a local feed shared by devices accessing this owner runtime. There is no online audience, live weather, Sentinel-2 execution, hosted runtime, or phone pairing. Preview text is not automatically anonymized. Summary construction does not attach raw observations or the farm-record object. It includes the selected title, takeaway, baseline, change, author, and method source; copied method text can contain farm details and needs review. Reviewed previews are immutable and expire on restart or when the in-memory preview limit is reached.
+
+The [learning method guide](../methods/README.md) describes the file-backed method packages, public Sentinel-2 checker, and linked scouting and comparison tools.
 
 ## Checks
 

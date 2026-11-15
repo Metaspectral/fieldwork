@@ -1,0 +1,29 @@
+{
+  "id": "watch-field",
+  "version": 1,
+  "title": "Watch a field",
+  "question": "Where does crop growth vary, and does the pattern persist?",
+  "stage": "observe",
+  "effort": "One field boundary; weekly automatic checks and occasional scouting.",
+  "needs": [
+    "Actual field polygon",
+    "Permission to query the public catalog",
+    "Runtime running for scheduled checks"
+  ],
+  "produces": [
+    "Qualified NDVI maps",
+    "Coverage and acquisition history",
+    "Scouting starting points"
+  ],
+  "limits": "Optical imagery can be cloudy or unavailable. NDVI does not diagnose a cause or establish yield. Narrow strips may be unresolved.",
+  "sources": [
+    {
+      "title": "Sentinel-2 Collection 1 COGs",
+      "url": "https://registry.opendata.aws/sentinel-2-l2a-cogs/"
+    },
+    {
+      "title": "Iowa State imagery interpretation",
+      "url": "https://crops.extension.iastate.edu/cropnews/2016/05/choosing-right-imagery-best-management-practices-color-nir-and-ndvi-imagery"
+    }
+  ]
+}

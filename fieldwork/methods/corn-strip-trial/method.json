@@ -1,0 +1,31 @@
+{
+  "id": "corn-strip-trial",
+  "version": 1,
+  "title": "Compare a corn practice",
+  "question": "Is one farmer-selected change worth repeating or expanding?",
+  "stage": "experiment",
+  "effort": "Plan before the operation, track blocks, and collect comparable harvest measurements.",
+  "needs": [
+    "Current practice and reason",
+    "One alternative",
+    "Equipment-compatible layout",
+    "Practical measurements and design review"
+  ],
+  "produces": [
+    "Reviewed trial protocol",
+    "Randomized block schematic",
+    "Paired yield summary",
+    "Farmer decision and follow-up"
+  ],
+  "limits": "Fieldwork reports descriptive means, not significance or causality. Replication, confounding, moisture correction and costs need explicit review.",
+  "sources": [
+    {
+      "title": "Nebraska on-farm research protocols",
+      "url": "https://cropwatch.unl.edu/farm-research-tests"
+    },
+    {
+      "title": "Nebraska research design guidance",
+      "url": "https://cropwatch.unl.edu/2016/10-steps-farm-research-success/"
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "dataset": "USDA BARC Gridded Yield Data Archive",
+  "doi": "https://doi.org/10.15482/USDA.ADC/28950746.v2",
+  "license": "U.S. Public Domain",
+  "licenseUrl": "https://www.usa.gov/publicdomain/label/1.0/",
+  "field": "Central Farm 1-7",
+  "reportedAcres": 28.95,
+  "areaHa": 11.715649342848,
+  "files": [
+    {
+      "filename": "yield-points-2014.csv",
+      "title": "Central Farm 1-7 \u00b7 2014 cleaned corn yield points",
+      "role": "yield",
+      "season": 2014,
+      "crop": "corn",
+      "sha256": "e2dd3a86fd2b0f3a45a4498f64b28bb75e67186ba2206bb8dea3b7cf8deba760",
+      "archivePath": "2014/2014/3B--Cleaned_Yield_Data_CSV/USDA_Central_Farm_1_7_2014_CORN_pt_out.csv"
+    },
+    {
+      "filename": "management-history.pdf",
+      "title": "Central Farm 1-7 \u00b7 later management history",
+      "role": "management",
+      "sha256": "e46ef8f4343e4d13881dd995a2ce900a957b7f3114b89171c516450f1b62e285",
+      "archivePath": "BARCFarmMgmt/CentralFarm_1-7.pdf"
+    },
+    {
+      "filename": "yield-map-2014.jpg",
+      "title": "Central Farm 1-7 \u00b7 2014 interpolated yield map",
+      "role": "map",
+      "season": 2014,
+      "crop": "corn",
+      "sha256": "18cdbdbfc5badf5bad764c26398de219a825a3db9872ce97425d10b4b3ce455b",
+      "archivePath": "2014/2014/6B--Interpolated_Yield_Values_JPG/CentralFarm_1-7_2014_Corn.jpg"
+    }
+  ]
+}

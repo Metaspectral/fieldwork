@@ -35,5 +35,5 @@ The `fieldwork-trust-guide` plugin adds a short "Trust guideline" section to the
 ## Hooking in a plugin
 
 - Return numbers in the [evidence format](EVIDENCE.md).
-- If using your tool means the farmer engaged, map it in the trust guide's `autoSignals` config. Defaults cover Jon's field history tools, `risk_check`, `show_source`, `plan_crop_trial` and `record_crop_observation`.
+- If using your tool means the farmer engaged, map it in the trust guide's `autoSignals` config. Defaults cover Jon's field history tools, the farm research and source library reads, `risk_check`, `show_source`, scouting notes, and the trial, corn plan and field comparison tools that start tracking or record a result.
 - Signals, pace and estimates are stored in `$DSH_HOME/fieldwork-native/trust.v2.json`, on this computer only. They are never shared with buyers, lenders or insurers. `trust_forget` deletes them through native approval.

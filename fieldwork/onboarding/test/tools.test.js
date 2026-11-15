@@ -245,18 +245,20 @@ describe('real data path', () => {
     assert.equal(calls.weather, 1)
   })
 
-  test('a year with no images still gets a weather-only result', async () => {
+  test('regional weather stays visible while unvalidated risk classifications are withheld', async () => {
     const { tools, field } = await realField()
     const history = await call(tools, 'field_history', { fieldId: field.fieldId })
     const mark = year => history.value.years.find(y => y.year === year).marks.droughtHeat
-    assert.deepEqual(mark(2022), { level: 'bad', sure: 'true for your region' })
-    assert.deepEqual(mark(2021), { level: 'watch', sure: 'true for your region' })
-    assert.deepEqual(mark(2019), { level: 'fine', sure: 'true for your region' })
+    assert.deepEqual(mark(2022), { level: 'no reading', sure: null })
+    assert.deepEqual(mark(2021), { level: 'no reading', sure: null })
+    assert.deepEqual(mark(2019), { level: 'no reading', sure: null })
     const detail = await call(tools, 'year_detail', { fieldId: field.fieldId, year: 2022 })
     const readings = detail.value.problems.find(p => p.problem === 'droughtHeat').readings
     assert.equal(readings.find(r => r.name.startsWith('crop greenness')).value, null)
     assert.equal(readings.find(r => r.name === 'hot days').value, 31)
-    assert.equal(readings.find(r => r.name === 'season rain').comparedWith.label, '30-year average')
+    assert.equal(readings.find(r => r.name === 'season rain').comparedWith, null)
+    assert.match(detail.value.problems[0].note, /not been regionally validated/)
+    assert.ok(history.value.missing.some(m => m.what === 'validated agronomic risk classification'))
     assert.match(detail.text, /crop greenness at its peak: no reading/)
   })
 
@@ -273,7 +275,7 @@ describe('real data path', () => {
     const dry = await realField({ weather: async () => fakeWeather(() => ({ rain: 1 })) })
     const { value } = await call(dry.tools, 'field_history', { fieldId: dry.field.fieldId })
     assert.ok(value.problems.includes('salt'))
-    assert.equal(value.years[0].marks.salt.level, 'watch')
+    assert.equal(value.years[0].marks.salt.level, 'no reading')
     assert.equal(value.windNotCounted, true)
   })
 
@@ -287,22 +289,17 @@ describe('real data path', () => {
     assert.match(text, /Ask the farmer: which crop was grown/)
   })
 
-  test('a corrected crop changes that year\'s water, topsoil and costs', async () => {
+  test('a crop correction persists without presenting unvalidated water or soil estimates', async () => {
     const { tools, field } = await realField()
-    const readings = async () => {
-      const { value } = await call(tools, 'year_detail', { fieldId: field.fieldId, year: 2019 })
-      return Object.fromEntries(value.problems.map(p => [p.problem, p.readings[0]?.value]))
-    }
-    const before = await readings()
     const { value } = await call(tools, 'correct_year', { fieldId: field.fieldId, year: 2019, whatWasWrong: 'That was alfalfa.', crop: 'alfalfa' })
     assert.equal(value.corrected.cropSource, 'you told us')
-    const after = await readings()
-    for (const problem of ['water', 'topsoil', 'costs']) {
-      assert.equal(typeof before[problem], 'number', `${problem} had a reading`)
-      assert.notEqual(after[problem], before[problem], `${problem} was worked out again`)
+    assert.equal(value.corrected.crop, 'alfalfa')
+    const detail = await call(tools, 'year_detail', { fieldId: field.fieldId, year: 2019 })
+    for (const p of detail.value.problems) {
+      assert.equal(p.level, 'no reading')
+      if (p.problem !== 'droughtHeat') assert.deepEqual(p.readings, [])
     }
-    assert.equal(before.topsoil > 2, true)
-    assert.equal(after.topsoil < 1, true)
+    assert.deepEqual((await call(tools, 'field_risks', { fieldId: field.fieldId })).value.risks, [])
   })
 
   test('a source that fails gives "no reading", never a guess', async () => {

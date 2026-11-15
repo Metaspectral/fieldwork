@@ -23,12 +23,15 @@ export interface Config {
   rules: StageRules
 }
 
-/** Tool use that counts by default: Jon's field history, the risk check, sources, and Daniel's trials. */
+/** Tool use that counts by default: field history and farm research, the risk check, sources, and Daniel's trials and corn plans. */
 export const DEFAULT_AUTO_SIGNALS: Record<string, SignalKind> = {
   field_history: 'history_viewed', year_detail: 'history_viewed', field_risks: 'history_viewed',
-  correct_year: 'history_corrected', save_field_note: 'history_corrected',
-  risk_check: 'risk_viewed', show_source: 'source_opened',
-  plan_crop_trial: 'trial_saved', record_crop_observation: 'outcome_recorded',
+  read_farm_research: 'history_viewed', check_field_monitor: 'history_viewed', inspect_yield_points: 'history_viewed',
+  correct_year: 'history_corrected', save_field_note: 'history_corrected', save_farm_field: 'history_corrected',
+  catalog_farmer_knowledge: 'history_corrected', save_field_scouting: 'history_corrected',
+  risk_check: 'risk_viewed', show_source: 'source_opened', read_farm_source: 'source_opened',
+  plan_crop_trial: 'trial_saved', accept_corn_plan: 'trial_saved', start_field_comparison: 'trial_saved',
+  record_crop_observation: 'outcome_recorded', observe_corn_plan: 'outcome_recorded', review_field_comparison: 'outcome_recorded',
 }
 
 const ranged = z.object({ value: z.number(), low: z.number(), high: z.number() })

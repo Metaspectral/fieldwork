@@ -16,9 +16,9 @@ A weather plugin can supplement a planting decision. A seed-cost plugin can comp
 
 ## Runtime and access
 
-The farmer's computer hosts a customized DeepSeek Harness runtime, private workspace storage, and experiment workers. The browser is the interface; the phone does not need to execute image processing. Jobs and their status must survive browser disconnection. Recovery after runtime restart needs explicit implementation.
+The farmer's computer hosts a customized DeepSeek Harness runtime, private workspace storage, and experiment workers. The browser is the interface; the phone does not need to execute image processing. Monitoring checks run independently of the browser. The [learning plugin](../methods/README.md) persists their receipts and catches up once after restart.
 
-Start with one farmer and phone access on the same network. Add authenticated remote access through a private network or tunnel later. Pairing, device revocation, and workspace authorization are application responsibilities. Do not expose unrestricted agent execution publicly.
+Start with one farmer using the local browser. Phone access is a nice-to-have outside the current milestone. Add authenticated remote access through a private network or tunnel later. Pairing, device revocation, and workspace authorization are application responsibilities. Do not expose unrestricted agent execution publicly.
 
 The same packaged runtime should eventually support hosted execution. Initially each workspace has one authoritative runtime. Automatic local/cloud switching, synchronization, and conflict resolution are deferred.
 
@@ -26,7 +26,7 @@ The same packaged runtime should eventually support hosted execution. Initially 
 
 Separate executable, developer-controlled integrations from farmer-editable method documents. Copying a community method creates a private draft; it does not install executable code or grant permissions.
 
-Plugin definitions should describe version, purpose, inputs, outputs, units, required access, limitations, and source attribution. Installations pin an approved version and configuration. Runs record the version, inputs, outputs, status, and relevant source timestamps. Long-running imagery jobs need cancellation and resource limits.
+Plugin definitions should describe version, purpose, inputs, outputs, units, required access, limitations, and source attribution. Installations pin an approved version and configuration. Runs record the version, inputs, outputs, status, and relevant source timestamps. File-backed learning methods add discovery metadata, editable instructions, and pinned snapshots; installed code remains separate. Long-running imagery jobs need cancellation and resource limits.
 
 The agent proposes actions through structured tools. Deterministic code performs calculations. Application checks enforce permissions and approvals outside the model. Activation, workflow updates, and publication are distinct decisions; rejection preserves the accepted state.
 

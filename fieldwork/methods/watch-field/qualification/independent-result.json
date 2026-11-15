@@ -1,0 +1,8 @@
+{
+  "independentEngine": "rasterio/GDAL",
+  "item": "S2A_T14SLH_20260730T174227_L2A",
+  "validPixels": 11705,
+  "totalPixels": 11705,
+  "meanNdvi": 0.36178865076947186,
+  "agreementTolerance": 1e-10
+}

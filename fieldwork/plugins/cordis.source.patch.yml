@@ -9,10 +9,14 @@
       config:
         file: !!js process.getBuiltinModule('node:path').join(process.env.DSH_HOME || process.getBuiltinModule('node:path').join(process.getBuiltinModule('node:os').homedir(), '.dsh'), 'fieldwork-native', 'trust.v2.json')
         packetDir: !!js process.getBuiltinModule('node:path').join(process.env.DSH_HOME || process.getBuiltinModule('node:path').join(process.getBuiltinModule('node:os').homedir(), '.dsh'), 'fieldwork-native', 'packets')
+    - id: fieldwork-learning
+      name: './learning.ts'
+      config:
+        root: !!js process.getBuiltinModule('node:path').join(process.env.DSH_HOME || process.getBuiltinModule('node:path').join(process.getBuiltinModule('node:os').homedir(), '.dsh'), 'fieldwork-workspace', 'learning')
     - id: fieldwork-preset
       name: './preset.ts'
     - id: fieldwork-onboarding
-      name: '../onboarding/index.js'
+      name: './onboarding-shared.mjs'
       config:
         pretend: true
     - id: fieldwork-onboarding-progress
