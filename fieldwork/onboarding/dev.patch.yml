@@ -1,0 +1,6 @@
+# Development overlay: load the plugin straight from this checkout.
+#   pnpm dsh web --patch fieldwork/onboarding/dev.patch.yml
+# Relative plugin paths resolve beside this file.
+- insert:
+    - id: fieldwork-onboarding
+      name: './index.js'

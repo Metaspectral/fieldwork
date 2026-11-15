@@ -6,7 +6,7 @@
 
 于 2026-11-14 使用 `fieldwork/ui/browser.test.mjs` 中的隔离浏览器流程捕获。桌面截图为 1440 × 1000；手机视图为 390 × 844。测试不消耗模型订阅。
 
-另见 [Jon 的田地历史插件预览](jon-onboarding/README.zh.md)，截图来自尚未合并的分支，使用虚构的玉米及大豆数据。
+另见 [Jon 的田地历史插件预览](jon-onboarding/README.zh.md)，截图于插件合并到 main 前捕获，使用虚构的玉米及大豆数据。
 
 ## 我的农场
 

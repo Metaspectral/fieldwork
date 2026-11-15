@@ -3,8 +3,8 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write fieldwork/screenshots/jon-onboarding/README.md
 /jon-s-field-history-plugin-preview:
-  en: 8631427b8cb9257f
-  zh: 3aafdb3b36360bb9
+  en: 87d51900be8984d2
+  zh: 632a794e62c0c455
 /jon-s-field-history-plugin-preview/crop-history:
   en: a3d459aac94b0092
   zh: e9292c3d8b8b73c0
@@ -15,5 +15,5 @@
   en: fac051eb486b15e0
   zh: bc7c93fd3cdd25d1
 /jon-s-field-history-plugin-preview/verification-and-limits:
-  en: 90c901d2bdc5712c
-  zh: 2451ccc98299925d
+  en: d27fa68bc24cd8d3
+  zh: 499ec0442735bf79

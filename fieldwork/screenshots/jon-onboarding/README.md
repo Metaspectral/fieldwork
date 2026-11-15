@@ -2,7 +2,7 @@
 
 English | [中文](README.zh.md)
 
-Actual native Harness captures of Jonathan Trueblood’s plugin on [onboarding-field-history](https://github.com/Metaspectral/fieldwork/tree/onboarding-field-history/fieldwork/onboarding), captured on 2026-11-14 from the commit titled “Add field history and onboarding plugin with pretend and real data”. The plugin is on that branch and has not been merged into main. These images are generated chat views of real tool results, not a dedicated field-history page.
+Actual native Harness captures of Jonathan Trueblood’s plugin on [onboarding-field-history](https://github.com/Metaspectral/fieldwork/tree/onboarding-field-history/fieldwork/onboarding), captured on 2026-11-14 from the commit titled “Add field history and onboarding plugin with pretend and real data”. The plugin is now merged into main; these captures document the earlier branch preview. These images are generated chat views of real tool results, not a dedicated field-history page.
 
 All field details, crop history, readings, and risk levels are invented demonstration values from the plugin’s default pretend mode. No field coordinates were sent to external data services in this preview.
 
@@ -33,7 +33,7 @@ A follow-up calls `year_detail` for 2022. The response labels the values as inve
 - Jon’s [handoff](https://github.com/Metaspectral/fieldwork/blob/onboarding-field-history/fieldwork/onboarding/HANDOFF.md) documents approximate field boundaries, unvalidated crop assumptions, missing data integrations, and other limits. The risk levels are not validated agronomic advice.
 - Field history currently has a separate store from My farm. Before integrating writes, align correction/note approval with Fieldwork’s native approval policy.
 
-To try it from a checkout of Jon’s branch, install dependencies, run `pnpm run fieldwork:build`, then:
+To try it from main, install dependencies, run `pnpm run fieldwork:build`, then:
 
 ```sh
 DSH_HOME="$PWD/.fieldwork/jon-preview" FIELDWORK_PRETEND=1 pnpm run fieldwork:start --patch fieldwork/onboarding/dev.patch.yml --no-open
