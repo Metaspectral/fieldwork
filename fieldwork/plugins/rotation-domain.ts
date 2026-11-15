@@ -37,6 +37,18 @@ export function parseRotationLibrary(raw: unknown): RotationLibrary { return rot
 
 const brookings = { kind: 'published-study', citation: 'Bansal, Wang and Osborne 2024. Agronomy Journal 116(6):3145–3157.', doi: '10.1002/agj2.21688' } as const
 const brookingsLimits = 'One research site near Brookings, South Dakota. No-till plots with low inputs. Costs and returns in the study cover one four-year cycle, 2017 to 2020. It does not tell you the yield or profit on your field.'
+/** Dataset the Brookings example outlines and crops are copied from. */
+export const brookingsSource = { id: 'usda-csb-2018-2025', title: 'USDA Crop Sequence Boundaries 2018–2025', citation: 'USDA National Agricultural Statistics Service, Crop Sequence Boundaries 2018–2025 (rev. 23).', url: 'https://www.nass.usda.gov/research-and-science/crop-sequence-boundaries' } as const
+/** Start of the year note the Brookings example stores when the USDA class for that year is not a rotation crop. */
+export const usdaClassNote = 'USDA class: '
+/**
+ * A year note as shown beside crop names, where the dataset is named once for the whole view.
+ * @param note - Year note as stored.
+ * @returns The class name alone for a USDA class note; any other note unchanged.
+ */
+export function shortYearNote(note: string): string {
+  return note.startsWith(usdaClassNote) ? note.slice(usdaClassNote.length) : note
+}
 /** The six rotations of the Brookings study. Crop orders only; none of the study's prices, yields or returns. */
 export const rotationLibrary: RotationLibrary = parseRotationLibrary({
   region: { id: 'us-sd-east', name: 'Eastern South Dakota' },

@@ -1,10 +1,8 @@
-/** Explicitly loaded Brookings example: real USDA field outlines near the study site and the published study location. Never a farmer's own records. */
+/** Explicitly loaded Brookings example: real USDA field outlines near the rotation study site. Never a farmer's own records. */
 import { randomUUID } from 'node:crypto'
 import type { FarmRecords, FarmState } from './records.ts'
-import type { RotationCropId } from './rotation-domain.ts'
+import { brookingsSource, usdaClassNote, type RotationCropId } from './rotation-domain.ts'
 const haPerAcre = 4046.8564224 / 10000
-/** Dataset the outlines and crops are copied from. */
-export const brookingsSource = { id: 'usda-csb-2018-2025', citation: 'USDA National Agricultural Statistics Service, Crop Sequence Boundaries 2018–2025 (rev. 23).', url: 'https://www.nass.usda.gov/research-and-science/crop-sequence-boundaries' } as const
 // USDA Cropland Data Layer classes that occur on the chosen outlines; only crops the rotation list names become a crop.
 const classes: Record<number, { crop?: RotationCropId; name: string }> = {
   1: { crop: 'corn', name: 'Corn' }, 5: { crop: 'soybean', name: 'Soybeans' }, 23: { crop: 'spring-wheat', name: 'Spring wheat' }, 24: { crop: 'winter-wheat', name: 'Winter wheat' },
@@ -19,11 +17,9 @@ export const brookingsFields = [
   { csbId: '461825001925260', name: 'East field', acres: 17.97, classes: [61, 61, 1, 5, 1, 5, 1, 1], inside: { longitude: -96.7559, latitude: 44.31823, radiusFeet: 160 },
     ring: [[-96.75457, 44.31837], [-96.75332, 44.31774], [-96.75287, 44.31711], [-96.75287, 44.31675], [-96.75323, 44.31639], [-96.75466, 44.31639], [-96.75466, 44.31558], [-96.75493, 44.31558], [-96.75493, 44.31576], [-96.75556, 44.31576], [-96.75556, 44.31675], [-96.75592, 44.31711], [-96.75727, 44.31774], [-96.75763, 44.31774], [-96.75754, 44.31873], [-96.75457, 44.31873], [-96.75457, 44.31837]] },
 ] as const
-/** Published location of the rotation study, rounded to the arc-minute as printed (44°19′N, 96°46′W). */
-export const brookingsSite = { longitude: -96.7667, latitude: 44.3167 } as const
 const firstYear = 2018
 /**
- * Add the three USDA outlines with their 2018–2025 crop classes and the study location as a point, all labelled as an example. Entries already on file are left alone.
+ * Add the three USDA outlines with their 2018–2025 crop classes, all labelled as an example. Entries already on file are left alone.
  * @param records - Farm record owner.
  * @returns Ids of the entries added by this call.
  */
@@ -35,15 +31,10 @@ export async function loadBrookingsExample(records: FarmRecords): Promise<string
     added.push({
       id: randomUUID(), name: `${f.name} · Brookings example`, areaHa: f.acres * haPerAcre, evidence: 'demo',
       notes: [`Example only: a real field outline near Brookings, South Dakota, from ${brookingsSource.citation} Outline ${f.csbId}. Crops are read from satellite images by USDA, not reported by a farmer, and nobody has confirmed this as their field.`],
-      years: Object.fromEntries(f.classes.map((code, i) => { const c = classes[code]!; return [String(firstYear + i), c.crop ? { crop: c.crop, notes: [] } : { notes: [`USDA class: ${c.name}`] }] })),
+      years: Object.fromEntries(f.classes.map((code, i) => { const c = classes[code]!; return [String(firstYear + i), c.crop ? { crop: c.crop, notes: [] } : { notes: [`${usdaClassNote}${c.name}`] }] })),
       geometry: { type: 'Polygon', coordinates: [f.ring], example: f.csbId, source: brookingsSource.id, shape: { type: 'circle', center: { latitude: f.inside.latitude, longitude: f.inside.longitude }, radiusFeet: f.inside.radiusFeet } },
     })
   }
-  if (!on('brookings-study-site')) added.push({
-    id: randomUUID(), name: 'Study site · Brookings example', evidence: 'demo', years: {},
-    notes: ['Example only: the published location of the Brookings rotation study (Bansal, Wang and Osborne 2024, doi:10.1002/agj2.21688), rounded to the nearest arc-minute, so the point is about a mile accurate. The study plots were small research plots, not a field. Its six rotations are in the rotation list.'],
-    geometry: { type: 'Point', coordinates: [brookingsSite.longitude, brookingsSite.latitude], example: 'brookings-study-site' },
-  })
   if (added.length) await records.change(s => { s.fields.push(...added) })
   return added.map(f => f.id)
 }

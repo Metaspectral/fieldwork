@@ -1,6 +1,7 @@
 /** Shared field records: the My farm fields table and the field context list on Corn planning. */
 import type { ReactNode } from 'react'
 import type { FarmState } from '../../../plugins/records.ts'
+import { shortYearNote } from '../../../plugins/rotation-domain.ts'
 import type { FieldworkKey } from './locales.ts'
 import { cropLabel, fieldAcres } from './rotation.tsx'
 import css from './page.module.css'
@@ -30,7 +31,7 @@ export function FieldContext({ fields, t, action }: { fields: FarmState['fields'
 export function FieldsTable({ fields, selectedId, t, condition, actions }: { fields: FarmState['fields']; selectedId?: string | null; t: T; condition?: ((field: Field) => string) | undefined; actions?: ReactNode }): ReactNode {
   const years = [...new Set(fields.flatMap(f => Object.keys(f.years)))].sort((a, b) => Number(a) - Number(b)).slice(-yearColumns)
   const rows = fields.some(f => f.id === selectedId) ? fields.filter(f => f.id === selectedId) : fields
-  const cell = (entry: Field['years'][string] | undefined) => entry?.crop ? <span className={own.crop} data-tone={cropTone(entry.crop)}>{cropLabel(t, entry.crop)}</span> : entry?.notes[0] ? <span className={own.note}>{entry.notes[0]}</span> : <span className={own.muted}>—</span>
+  const cell = (entry: Field['years'][string] | undefined) => entry?.crop ? <span className={own.crop} data-tone={cropTone(entry.crop)}>{cropLabel(t, entry.crop)}</span> : entry?.notes[0] ? <span className={own.note}>{shortYearNote(entry.notes[0])}</span> : <span className={own.muted}>—</span>
   // A name such as "West strip · Brookings example" keeps its qualifier on a second, quieter line.
   const name = (f: Field) => { const [first, ...rest] = f.name.split(' · '); return rest.length ? <>{first}<span className={own.rowLine}>{rest.join(' · ')}</span></> : f.name }
   return <section className={css.card} aria-label={t('fieldsCard')}>

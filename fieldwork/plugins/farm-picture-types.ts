@@ -24,6 +24,24 @@ export function fieldLocation(geometry: unknown): FieldLocation | undefined {
   if (!parsed.success) return undefined
   return parsed.data.type === 'Polygon' ? { kind: 'outline', points: parsed.data.coordinates[0] } : { kind: 'point', points: [parsed.data.coordinates] }
 }
+const insideSchema = z.looseObject({ shape: z.looseObject({ type: z.literal('circle'), center: z.object({ longitude: z.number(), latitude: z.number() }) }) })
+/**
+ * Where a field's label goes. An outline's area centre can fall outside an L-shaped field, so the circle stored inside the outline is used when there is one.
+ * @param geometry - The field's `geometry` value, from any provider.
+ * @returns Longitude and latitude of the stored inside circle, else the outline's area centre, else the point; undefined when the field has no location.
+ */
+export function fieldLabelPoint(geometry: unknown): [number, number] | undefined {
+  const location = fieldLocation(geometry)
+  if (!location) return undefined
+  const inside = insideSchema.safeParse(geometry), ring = location.points, origin = ring[0]!
+  if (location.kind === 'point') return origin
+  if (inside.success) return [inside.data.shape.center.longitude, inside.data.shape.center.latitude]
+  // Shoelace sums taken from the first corner, so the small differences between corners are not lost beside the size of a longitude.
+  let area = 0, x = 0, y = 0
+  ring.forEach((p, i) => { const q = ring[(i + 1) % ring.length]!, x0 = p[0] - origin[0], y0 = p[1] - origin[1], x1 = q[0] - origin[0], y1 = q[1] - origin[1], cross = x0 * y1 - x1 * y0; area += cross; x += (x0 + x1) * cross; y += (y0 + y1) * cross })
+  // A ring with no area has no area centre; its first corner is on the ring.
+  return area === 0 ? origin : [origin[0] + x / (3 * area), origin[1] + y / (3 * area)]
+}
 /**
  * Map longitude/latitude onto a saved picture. The picture is a small north-up cut of a projected image, so a straight-line fit through three corners is accurate to well under a pixel.
  * @param corners - The picture's corner coordinates.

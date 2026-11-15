@@ -7,9 +7,9 @@ import { join } from 'node:path'
 import { inflateSync } from 'node:zlib'
 import { FarmError, FarmRecords } from './records.ts'
 import { encodePng, fetchFarmPicture, readFarmPicture, readFarmPictureBytes, refreshFarmPicture } from './farm-picture.ts'
-import { fieldLocation, pictureProjection, type FarmPicture } from './farm-picture-types.ts'
-import { brookingsFields, brookingsSite, loadBrookingsExample } from './rotation-brookings.ts'
-import { rotationCrops } from './rotation-domain.ts'
+import { fieldLabelPoint, fieldLocation, pictureProjection, type FarmPicture } from './farm-picture-types.ts'
+import { brookingsFields, loadBrookingsExample } from './rotation-brookings.ts'
+import { rotationCrops, shortYearNote } from './rotation-domain.ts'
 
 async function withRecords(run: (records: FarmRecords) => Promise<void>) {
   const home = await mkdtemp(join(tmpdir(), 'fieldwork-picture-'))
@@ -17,21 +17,21 @@ async function withRecords(run: (records: FarmRecords) => Promise<void>) {
 }
 const picture: FarmPicture = { sceneId: 'local-test', acquiredAt: '2026-07-01T17:00:00Z', fetchedAt: '2026-11-15T00:00:00Z', source: 'https://example.test/scene', attribution: 'Test picture.', width: 2, height: 1, corners: [[-97, 45], [-96, 45], [-96, 44], [-97, 44]] }
 
-test('the Brookings example adds three labelled outlines with USDA crops and the study point, once', async () => withRecords(async records => {
-  assert.equal((await loadBrookingsExample(records)).length, 4)
+test('the Brookings example adds three labelled outlines with USDA crops, once', async () => withRecords(async records => {
+  assert.equal((await loadBrookingsExample(records)).length, 3)
   assert.equal((await loadBrookingsExample(records)).length, 0, 'a second load adds nothing')
   const fields = records.snapshot().fields
-  assert.equal(fields.length, 4)
+  assert.equal(fields.length, 3)
   for (const f of fields) { assert.equal(f.evidence, 'demo'); assert.match(f.name, /· Brookings example$/); assert.match(f.notes[0]!, /^Example only/) }
   const strip = fields[0]!
   assert.deepEqual(Object.keys(strip.years), ['2018', '2019', '2020', '2021', '2022', '2023', '2024', '2025'])
   assert.deepEqual(['2019', '2020', '2021', '2022'].map(y => strip.years[y]!.crop), ['corn', 'soybean', 'spring-wheat', 'winter-wheat'])
   assert.equal(strip.years['2018']!.crop, undefined, 'a class that is not a rotation crop stays a note')
   assert.deepEqual(strip.years['2018']!.notes, ['USDA class: Developed, open space'])
+  assert.equal(shortYearNote(strip.years['2018']!.notes[0]!), 'Developed, open space')
+  assert.equal(shortYearNote('Planted late'), 'Planted late')
   assert.ok(Math.abs(strip.areaHa! - 12.21 * .40468564224) < 1e-9)
   for (const f of fields) for (const y of Object.values(f.years)) if (y.crop) assert.ok(rotationCrops.some(c => c.id === y.crop), y.crop)
-  assert.deepEqual(fieldLocation(fields[3]!.geometry), { kind: 'point', points: [[brookingsSite.longitude, brookingsSite.latitude]] })
-  assert.equal(fields[3]!.areaHa, undefined)
 }))
 test('each example outline is a closed ring and its check circle lies inside the ring', () => {
   for (const f of brookingsFields) {
@@ -48,6 +48,16 @@ test('a field location is read from an outline or a point and nothing else', () 
   assert.equal(fieldLocation(undefined), undefined)
   assert.equal(fieldLocation({ shape: { type: 'circle', center: { latitude: 1, longitude: 2 }, radiusFeet: 100 } }), undefined)
   assert.equal(fieldLocation({ type: 'Point', coordinates: [200, 2] }), undefined, 'a longitude off the globe is not a location')
+})
+test('a label goes on the stored inside circle, else the area centre of the outline, else the point', () => {
+  const near = (actual: [number, number] | undefined, expected: [number, number]) => assert.ok(actual && Math.abs(actual[0] - expected[0]) < 1e-9 && Math.abs(actual[1] - expected[1]) < 1e-9, `${actual} is not ${expected}`)
+  // An L-shaped outline: the average of its corners is pulled toward the corner-heavy side; the area centre is not.
+  const ring = [[-96, 44], [-95.6, 44], [-95.6, 44.1], [-95.9, 44.1], [-95.9, 44.4], [-96, 44.4], [-96, 44]]
+  near(fieldLabelPoint({ type: 'Polygon', coordinates: [ring] }), [-96 + .0095 / .07, 44 + .0095 / .07])
+  near(fieldLabelPoint({ type: 'Polygon', coordinates: [ring], shape: { type: 'circle', center: { longitude: -95.95, latitude: 44.2 }, radiusFeet: 100 } }), [-95.95, 44.2])
+  near(fieldLabelPoint({ type: 'Point', coordinates: [1, 2] }), [1, 2])
+  near(fieldLabelPoint({ type: 'Polygon', coordinates: [[[1, 1], [2, 2], [3, 3], [1, 1]]] }), [1, 1])
+  assert.equal(fieldLabelPoint(undefined), undefined)
 })
 test('a picture position runs 0 to 1 from its top-left corner', () => {
   const at = pictureProjection(picture.corners)
