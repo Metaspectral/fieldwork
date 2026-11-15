@@ -83,7 +83,7 @@ export function NasaChecksAction({ fieldId, t }: { fieldId: string; t: T }): Rea
   const last = s.status.checks.find(c => c.fieldId === fieldId)
   return <>
     <Button variant="outline" disabled={s.running !== null} onClick={() => last ? s.setOpen(last) : void s.run({ fieldId }, fieldId)}>{s.running === fieldId ? t('nasaRunning') : t('nasaChecks')}</Button>
-    {s.error && s.errorFor === fieldId && <span role="alert" className={css.error}>{s.error}</span>}
+    {s.error !== null && s.errorFor === fieldId && <span role="alert" className={css.error}>{s.error || t('conditionsFailed')}</span>}
     <NasaCheckDialog check={s.open?.fieldId === fieldId ? s.open : null} onClose={() => s.setOpen(null)} t={t} onRerun={() => void s.run({ fieldId }, fieldId)} />
   </>
 }
