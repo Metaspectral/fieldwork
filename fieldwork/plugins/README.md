@@ -28,7 +28,7 @@ The preset includes no shell or arbitrary filesystem tools. Read-only operations
 
 Records are saved in `$DSH_HOME/fieldwork-native/records.v1.json`; they are independent of the deleted mockup data. Run one process per record file. Changes are serialized and committed by atomic replacement. Missing files start a clearly fictional demo farm; invalid existing files fail rather than reset. Tracking does not approve agronomic treatment or schedule physical work.
 
-Community is a local feed shared by devices accessing this owner runtime. There is no online audience, live weather, Sentinel-2 execution, hosted runtime, or phone pairing. Preview text is not automatically anonymized. Summary construction excludes private observations and farm context but includes selected title, takeaway, baseline, change, author, and method source. Reviewed previews are immutable and expire on restart or when the in-memory preview limit is reached.
+Community is a local feed shared by devices accessing this owner runtime. There is no online audience, live weather, Sentinel-2 execution, hosted runtime, or phone pairing. Preview text is not automatically anonymized. Summary construction does not attach raw observations or the farm-record object. It includes the selected title, takeaway, baseline, change, author, and method source; copied method text can contain farm details and needs review. Reviewed previews are immutable and expire on restart or when the in-memory preview limit is reached.
 
 ## Checks
 

@@ -61,7 +61,7 @@ export class FarmRecords {
     this.queue = operation.catch(() => undefined)
     return operation
   }
-  /** Prepare selected text only; raw observations and farm context are never attached. */
+  /** Prepare selected text only; raw observations and the farm-record object are never attached. */
   preview(id: string, title: string, takeaway: string): { previewId: string; summary: ShareSummary } {
     const trial = this.state.trials.find(t => t.id === id)
     if (!trial) throw new FarmError('Experiment not found.', 'FARM_INPUT')
