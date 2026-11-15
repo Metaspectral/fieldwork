@@ -1,6 +1,6 @@
 # Fieldwork
 
-Fieldwork is a farmer-owned workspace built on DeepSeek Harness. Start with the [Fieldwork overview](fieldwork/README.md), [team setup](fieldwork/SETUP.md), and [upstream baseline](fieldwork/UPSTREAM.md). The harness runtime includes an opt-in [Fieldwork plugin POC](fieldwork/plugins/README.md).
+Fieldwork is a farmer-owned workspace built on DeepSeek Harness. Start with the [Fieldwork overview](fieldwork/README.md), [team setup](fieldwork/SETUP.md), and [upstream baseline](fieldwork/UPSTREAM.md). The harness runtime includes an opt-in [Fieldwork plugin POC](fieldwork/plugins/README.md). View the [app screenshots](fieldwork/screenshots/README.md).
 
 English | [中文](README.zh.md)
 

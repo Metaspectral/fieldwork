@@ -10,3 +10,7 @@
       name: '../ui/src/index.ts'
     - id: fieldwork-codex-subscription
       name: '../codex/index.ts'
+
+# Fieldwork owns the native brand slots; omit the upstream decorative home layer.
+- id: ui-brand-official
+  disabled: true

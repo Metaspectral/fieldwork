@@ -17,6 +17,7 @@ Each capability is a separate Cordis plugin within the Fieldwork agent preset. A
 
 ## Start here
 
+- [Screenshots](screenshots/README.md) and [starter identity](brand/README.md)
 - [Native plugin run guide](plugins/README.md)
 - [Team setup](SETUP.md)
 - [Architecture](docs/architecture.md)

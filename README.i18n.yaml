@@ -3,8 +3,8 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write README.md
 /fieldwork:
-  en: 395fa5d49b7f1f30
-  zh: 6ffee1766b03aa61
+  en: 80f5d299394c5194
+  zh: 127381212177634e
 /fieldwork/developer-preview:
   en: 4ef4d8a71ac143f0
   zh: 1bfc3149ba8e5543

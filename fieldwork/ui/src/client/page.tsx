@@ -37,7 +37,7 @@ export function Page(props: Props): ReactNode {
   const trial = form?.id ? state.data?.trials.find(x => x.id === form.id) : undefined
   if (!state.data) return <section className={css.page}><h1>{t(props.section)}</h1><p role="status">{state.error ?? t('loading')}</p><Button onClick={() => void props.refresh()}>{t('retry')}</Button></section>
   return <section className={css.page}>
-    <header className={css.header}><div><h1>{t(props.section)}</h1><p>{t(props.section === 'farm' ? 'farmIntro' : props.section === 'community' ? 'communityIntro' : 'experimentsIntro')}</p></div><Button variant="outline" onClick={() => void props.refresh()}>{t('refresh')}</Button></header>
+    <header className={css.header}><div><p className={css.brandLine}>{t('brandLine')}</p><h1>{t(props.section)}</h1><p>{t(props.section === 'farm' ? 'farmIntro' : props.section === 'community' ? 'communityIntro' : 'experimentsIntro')}</p></div><Button variant="outline" onClick={() => void props.refresh()}>{t('refresh')}</Button></header>
     <div className={css.status}><span>{t('local')}</span><span>{t(props.section === 'community' ? 'localFeed' : 'private')}</span></div>
     {state.error && <p role="alert" className={css.error}>{state.error}</p>}
     {(completed || state.saved) && <p role="status" className={css.notice}>{t('saved')}</p>}

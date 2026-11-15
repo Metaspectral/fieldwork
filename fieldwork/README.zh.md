@@ -17,6 +17,7 @@
 
 ## 从这里开始
 
+- [截图](screenshots/README.zh.md)及[初始品牌](brand/README.zh.md)
 - [原生插件运行指南](plugins/README.zh.md)
 - [团队设置](SETUP.md)
 - [架构](docs/architecture.md)
