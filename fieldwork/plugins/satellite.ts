@@ -27,12 +27,23 @@ export function boundaryBbox(boundary: Boundary): [number, number, number, numbe
   const ring = boundary.coordinates[0]
   return [Math.min(...ring.map(p => p[0])), Math.min(...ring.map(p => p[1])), Math.max(...ring.map(p => p[0])), Math.max(...ring.map(p => p[1]))]
 }
-function publicAsset(href: string): string {
+/**
+ * Accept only the public Sentinel-2 bucket the catalog is expected to name.
+ * @param href - Asset address from a catalog record.
+ * @returns The normalized address; any other host, path, port, credential or query is rejected.
+ */
+export function publicAsset(href: string): string {
   const url = new URL(href)
   if (url.protocol !== 'https:' || url.hostname !== 'e84-earth-search-sentinel-data.s3.us-west-2.amazonaws.com' || !url.pathname.startsWith('/sentinel-2-c1-l2a/') || url.username || url.password || url.port || url.search) throw new LearningError('The catalog supplied an unsupported image location; no image was read.', 'MONITOR_DATA')
   return url.href
 }
-function imageWindow(image: GeoTIFFImage, bounds: [number, number, number, number]): [number, number, number, number] {
+/**
+ * Pixel window covering projected bounds in a north-up raster.
+ * @param image - Opened raster image.
+ * @param bounds - West, south, east, north in the raster's projection.
+ * @returns Left, top, right, bottom pixel offsets.
+ */
+export function imageWindow(image: GeoTIFFImage, bounds: [number, number, number, number]): [number, number, number, number] {
   const [ox, oy] = image.getOrigin(), [rx, ry] = image.getResolution()
   if (!(rx! > 0 && ry! < 0)) throw new LearningError('Unsupported raster orientation.', 'MONITOR_DATA')
   return [Math.floor((bounds[0] - ox!) / rx!), Math.floor((bounds[3] - oy!) / ry!), Math.ceil((bounds[2] - ox!) / rx!), Math.ceil((bounds[1] - oy!) / ry!)]

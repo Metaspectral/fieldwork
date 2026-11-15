@@ -58,3 +58,27 @@
 .downloadLink:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; }
 
 .page > .actions { margin-inline: auto; }
+
+.rowActions { display: flex; gap: 8px; white-space: nowrap; }
+.header button { flex: none; white-space: nowrap; }
+.cropOrder { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
+.cropOrder select, .sheet input { box-sizing: border-box; padding: 6px 8px; border: 1px solid var(--dsw-alias-border-l3); border-radius: 8px; color: var(--dsw-alias-label-primary); background: var(--dsw-alias-bg-base); font: inherit; }
+.sheet input { width: 96px; }
+.sheet th, .sheet td { padding: 6px 12px 6px 0; font-weight: 400; }
+.srOnly { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.farmMap { display: block; width: 100%; height: auto; border-radius: 8px; }
+.farmMapCanvas { fill: #3d4a3a; }
+.farmMapOutline { fill: rgb(255 255 255 / 8%); stroke: #fff; stroke-width: 2.5; stroke-linejoin: round; paint-order: stroke; filter: drop-shadow(0 0 1px #000); }
+.farmMapPoint { fill: #fff; stroke: #1c1c1c; stroke-width: 2; }
+.farmMapLabel rect { fill: rgb(16 20 16 / 78%); }
+.farmMapName { fill: #fff; font-size: 13px; font-weight: 500; }
+.farmMapCrop { fill: rgb(255 255 255 / 84%); font-size: 12px; }
+.farmMapLabel[data-state='selected'] rect { fill: rgb(16 20 16 / 92%); stroke: #ffd64a; stroke-width: 1.5; }
+.farmMapLabel[data-state='other'] { opacity: .78; }
+.page .farmMapFacts { display: grid; grid-template-columns: max-content 1fr; gap: 6px 20px; margin: 14px 0 0; font-size: 13px; }
+.page .farmMapFacts dt, .page .farmMapFacts dd { margin: 0; line-height: 1.5; }
+@media (max-width: 560px) { .page .farmMapFacts { grid-template-columns: 1fr; gap: 0; } .page .farmMapFacts dd { margin-bottom: 8px; } }
+.farmMap g[data-state='selected'] .farmMapOutline { fill: rgb(255 214 74 / 16%); stroke: #ffd64a; stroke-width: 4.5; }
+.farmMap g[data-state='selected'] .farmMapPoint { fill: #ffd64a; }
+.farmMap g[data-state='other'] .farmMapOutline { fill: none; stroke-width: 1.8; stroke-dasharray: 8 6; opacity: .8; }
+.farmMap g[data-state='other'] .farmMapPoint { opacity: .7; }

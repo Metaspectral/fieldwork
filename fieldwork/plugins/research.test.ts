@@ -14,14 +14,14 @@ test('v1 migration preserves original bytes, farm baseline, and prior trials', a
   const home = await mkdtemp(join(tmpdir(), 'fieldwork-migration-'))
   try {
     const file = join(home, 'records.json')
-    const { fields: _f, sources: _s, cornPlans: _p, ...old } = FarmRecords.open(file).snapshot()
+    const { fields: _f, sources: _s, cornPlans: _p, rotationPlans: _r, ...old } = FarmRecords.open(file).snapshot()
     const bytes = JSON.stringify({ ...old, version: 1 })
     await writeFile(file, bytes)
     const records = FarmRecords.open(file)
     assert.equal(await readFile(file + '.v1.backup', 'utf8'), bytes)
     assert.equal(await readFile(file, 'utf8'), bytes, 'opening does not replace original')
     await records.change(s => { s.farm.name = 'Confirmed farmer name' })
-    assert.equal(FarmRecords.open(file).snapshot().version, 2)
+    assert.equal(FarmRecords.open(file).snapshot().version, 3)
     assert.equal(await readFile(file + '.v1.backup', 'utf8'), bytes)
   } finally { await rm(home, { recursive: true, force: true }) }
 })

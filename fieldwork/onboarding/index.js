@@ -342,12 +342,13 @@ async function loadSkill() {
  * @param config.file - where the farmer's answers are saved
  * @param config.pretend - true (default) returns the mockup's invented values
  * @param config.sources - replacement data sources, for tests
+ * @param config.earthdataTokenFile - file holding a NASA Earthdata token for field greenness
  * @param config.lastYear - last full year to report, for tests
  */
 export async function apply(ctx, config = {}) {
   const pretend = config.pretend ?? process.env.FIELDWORK_PRETEND !== '0'
   const store = config.store ?? await FieldStore.open(config.file ?? defaultFile())
-  const sources = config.sources ?? createSources()
+  const sources = config.sources ?? createSources(fetch, { tokenFile: config.earthdataTokenFile })
   const skill = await loadSkill()
   const lastYear = config.lastYear ?? new Date().getUTCFullYear() - 1
   const years = Array.from({ length: SETTINGS.years }, (_, i) => lastYear - SETTINGS.years + 1 + i)

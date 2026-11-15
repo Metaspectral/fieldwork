@@ -10,6 +10,7 @@ import type {} from '../../plugins/learning.ts'
 import { LearningError } from '../../plugins/learning-error.ts'
 import { performLearning } from './learning-commands.ts'
 import { perform } from './commands.ts'
+import { readFarmPicture, readFarmPictureBytes } from '../../plugins/farm-picture.ts'
 /** Native UI transport plugin identity. */
 export const name = 'fieldwork-pages'
 /** Reuse the Harness transport and the same Host record owner as agent tools. */
@@ -54,6 +55,14 @@ export function apply(ctx: Context): void {
       res.writeHead(200, { 'Content-Type': source.mediaType, 'X-Content-Type-Options': 'nosniff', 'Cache-Control': 'no-store', 'Content-Security-Policy': "default-src 'none'; sandbox" }).end(bytes)
     } catch { res.writeHead(500).end() }
   } }))
+  ctx.effect(() => ctx.webServer.register({ kind: 'exact', path: '/fieldwork-farm-picture', auth: 'required', async handler(req, res, peer) {
+    if (peer?.principal.kind !== 'owner') { res.writeHead(403).end(); return }
+    if (req.method !== 'GET') { res.writeHead(405).end(); return }
+    try {
+      if (!await readFarmPicture(ctx.farmRecords.directory)) { res.writeHead(404).end(); return }
+      res.writeHead(200, { 'Content-Type': 'image/png', 'X-Content-Type-Options': 'nosniff', 'Cache-Control': 'no-store', 'Content-Security-Policy': "default-src 'none'; sandbox" }).end(await readFarmPictureBytes(ctx.farmRecords.directory))
+    } catch (error) { ctx.logger.warn('Could not serve the farm picture', error); res.writeHead(500).end() }
+  } }))
   ctx.effect(() => ctx.webServer.register({ kind: 'exact', path: '/fieldwork-learning-file', auth: 'required', async handler(req, res, peer) {
     if (peer?.principal.kind !== 'owner') { res.writeHead(403).end(); return }
     if (req.method !== 'GET') { res.writeHead(405).end(); return }
@@ -69,14 +78,14 @@ export function apply(ctx: Context): void {
     res.setHeader('Cache-Control', 'no-store'); res.setHeader('Content-Type', 'application/json'); res.setHeader('X-Content-Type-Options', 'nosniff')
     if (peer?.principal.kind !== 'owner') { res.writeHead(403).end(); return }
     try {
-      if (req.method === 'GET') { await ctx.farmLearning.refreshMethods(); res.end(JSON.stringify({ state: ctx.farmRecords.snapshot(), learning: ctx.farmLearning.snapshot() })); return }
+      if (req.method === 'GET') { await ctx.farmLearning.refreshMethods(); res.end(JSON.stringify({ state: ctx.farmRecords.snapshot(), learning: ctx.farmLearning.snapshot(), picture: await readFarmPicture(ctx.farmRecords.directory) })); return }
       if (req.method !== 'POST') { res.writeHead(405).end(); return }
       if (!req.headers.origin || new URL(req.headers.origin).host !== req.headers.host || !req.headers['content-type']?.startsWith('application/json')) { res.writeHead(403).end(); return }
       const chunks: Buffer[] = []; let bytes = 0
       for await (const chunk of req) { const buffer = Buffer.from(chunk); bytes += buffer.length; if (bytes > 7 * 1024 * 1024) { res.writeHead(413).end(); return }; chunks.push(buffer) }
       const input = JSON.parse(Buffer.concat(chunks).toString('utf8'))
       const result = typeof input?.action === 'string' && input.action.startsWith('learning/') ? await performLearning(ctx.farmLearning, input) : await perform(ctx.farmRecords, input)
-      res.end(JSON.stringify({ ...result, state: ctx.farmRecords.snapshot(), learning: ctx.farmLearning.snapshot() }))
+      res.end(JSON.stringify({ ...result, state: ctx.farmRecords.snapshot(), learning: ctx.farmLearning.snapshot(), picture: await readFarmPicture(ctx.farmRecords.directory) }))
     } catch (error) {
       const input = error instanceof ZodError || error instanceof SyntaxError || error instanceof FarmError && error.code === 'FARM_INPUT' || error instanceof LearningError && error.code === 'LEARNING_INPUT'
       if (!input) ctx.logger.warn('Fieldwork page command failed', error)

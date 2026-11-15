@@ -8,6 +8,7 @@ import type { MainPanelId } from '@deepseek-ai/dsh-client-ui-layout/client'
 import { PageController, type Face } from './controller.ts'
 import { LearningPage } from './learning.tsx'
 import { ResearchPage } from './research.tsx'
+import { RotationPage } from './rotation.tsx'
 import { Page, FarmIcon, CommunityIcon, ExperimentIcon } from './page.tsx'
 import { OnboardingController, type SetupFace } from './onboarding-controller.ts'
 import { SetupCard, SetupMenu } from './onboarding.tsx'
@@ -54,10 +55,10 @@ export function apply(ctx: Context): void {
   ctx.slots.inject('conversation.input.dock', () => ctx.slots.register({ name: 'conversation.input.dock', id: 'fieldwork-onboarding', locale: 'fieldwork', inject: id => setupFace(id, true) }, SetupCard))
   ctx.slots.inject('conversation.session.header.utilities', () => ctx.slots.register({ name: 'conversation.session.header.utilities', id: 'fieldwork-onboarding', locale: 'fieldwork', inject: id => setupFace(id) }, SetupMenu))
   void onboarding.boot()
-  const sections = [{ section: 'farm', icon: FarmIcon }, { section: 'community', icon: CommunityIcon }, { section: 'experiments', icon: ExperimentIcon }, { section: 'library', icon: ExperimentIcon }, { section: 'corn', icon: FarmIcon }, { section: 'learning', icon: ExperimentIcon }] as const
+  const sections = [{ section: 'farm', icon: FarmIcon }, { section: 'community', icon: CommunityIcon }, { section: 'experiments', icon: ExperimentIcon }, { section: 'library', icon: ExperimentIcon }, { section: 'corn', icon: FarmIcon }, { section: 'rotation', icon: FarmIcon }, { section: 'learning', icon: ExperimentIcon }] as const
   for (const [index, { section, icon }] of sections.entries()) {
     const id = `fieldwork-${section}` as MainPanelId
-    ctx.slots.inject('main', () => ctx.slots.register({ name: 'main', key: id, locale: 'fieldwork', inject: (): Face => ({ hooks: { records: controller.store }, section, selectContext: value => controller.selectContext(value), navigate: section => ctx.layout.selectPanel(`fieldwork-${section}` as MainPanelId), refresh: () => controller.refresh(), perform: c => controller.perform(c) }) }, section === 'learning' ? LearningPage : section === 'library' || section === 'corn' ? ResearchPage : Page))
+    ctx.slots.inject('main', () => ctx.slots.register({ name: 'main', key: id, locale: 'fieldwork', inject: (): Face => ({ hooks: { records: controller.store }, section, selectContext: value => controller.selectContext(value), navigate: section => ctx.layout.selectPanel(`fieldwork-${section}` as MainPanelId), refresh: () => controller.refresh(), perform: c => controller.perform(c) }) }, section === 'learning' ? LearningPage : section === 'rotation' ? RotationPage : section === 'library' || section === 'corn' ? ResearchPage : Page))
     ctx.slots.inject('sidebar.panellist', () => ctx.slots.register({ name: 'sidebar.panellist', id, order: index - 30, locale: 'fieldwork', label: () => t(section) }, icon))
   }
 }

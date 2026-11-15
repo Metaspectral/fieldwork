@@ -5,11 +5,33 @@
   "description": "Fieldwork onboarding: find and confirm a farmer's field, then show its year-by-year history.",
   "type": "module",
   "main": "index.js",
-  "files": ["index.js", "history.js", "sources.js", "settings.js", "crops.js", "pretend-data.js", "cordis.patch.yml", "skills"],
-  "engines": { "dsh": ">=0.2.0 <0.3.0" },
-  "dsh": { "bundle": { "patch": "./cordis.patch.yml" } },
+  "files": [
+    "index.js",
+    "history.js",
+    "sources.js",
+    "settings.js",
+    "crops.js",
+    "pretend-data.js",
+    "cordis.patch.yml",
+    "skills",
+    "weather-record.js",
+    "weather-record.d.ts",
+    "hls.js",
+    "hls.d.ts",
+    "crops.d.ts",
+    "settings.d.ts",
+    "sources.d.ts"
+  ],
+  "engines": {
+    "dsh": ">=0.2.0 <0.3.0"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
   "scripts": {
-    "test": "node --test test/rules.test.js test/tools.test.js"
+    "test": "node --test test/rules.test.js test/tools.test.js test/weather-record.test.js"
   },
   "peerDependencies": {
     "@deepseek-ai/dsh-error": ">=0.2.2-rc.3 <0.3.0",
@@ -18,5 +40,9 @@
   "devDependencies": {
     "@deepseek-ai/dsh-error": "workspace:*",
     "@deepseek-ai/dsh-tools": "workspace:*"
+  },
+  "dependencies": {
+    "geotiff": "^3.0.5",
+    "proj4": "^2.23.0"
   }
 }

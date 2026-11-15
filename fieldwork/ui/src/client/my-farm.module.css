@@ -1,0 +1,52 @@
+.cardHead { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; margin-bottom: 16px; }
+.cardHead h2 { margin-bottom: 8px; }
+.cardHead p { margin: 0; }
+.connection { flex: none; font-size: 12px; color: var(--dsw-alias-label-secondary); white-space: nowrap; }
+.connection[data-connected='true'] { color: var(--fieldwork-accent); }
+.cardActions { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+
+.table { width: 100%; border-collapse: collapse; font-size: 13px; font-variant-numeric: tabular-nums; }
+.table th, .table td { text-align: left; padding: 8px 12px 8px 0; border-bottom: 1px solid var(--dsw-alias-border-l3); font-weight: 400; vertical-align: middle; }
+.table thead th { color: var(--dsw-alias-label-secondary); font-size: 12px; white-space: nowrap; }
+.table th:last-child, .table td:last-child { padding-right: 0; }
+.table tbody th { font-weight: 500; white-space: nowrap; }
+.table tbody tr:last-child th, .table tbody tr:last-child td { border-bottom: 0; }
+.table tr[data-unusual='true'] { background: var(--fieldwork-accent-soft); }
+.table[data-tinted='true'] th:first-child, .table[data-tinted='true'] td:first-child { padding-left: 10px; }
+.table[data-tinted='true'] td:last-child { padding-right: 10px; }
+.muted { color: var(--dsw-alias-label-secondary); }
+.note { display: block; max-width: 96px; color: var(--dsw-alias-label-secondary); font-size: 12px; line-height: 1.4; }
+.nowrap { white-space: nowrap; }
+
+.crop { --crop-fill: var(--dsw-alias-bg-base); --crop-ink: var(--dsw-alias-label-primary); display: inline-block; padding: 2px 7px; border-radius: 8px; font-size: 12px; line-height: 1.5; white-space: nowrap; background: var(--crop-fill); color: var(--crop-ink); }
+.crop[data-tone='corn'] { --crop-fill: #f6ecc6; --crop-ink: #57460a; }
+.crop[data-tone='legume'] { --crop-fill: #dcefe3; --crop-ink: #1e513d; }
+.crop[data-tone='grain'] { --crop-fill: #f2e3d1; --crop-ink: #603f1a; }
+.crop[data-tone='other'] { border: 1px solid var(--dsw-alias-border-l3); padding: 1px 6px; }
+:global(body[data-ds-dark-theme]) .crop[data-tone='corn'] { --crop-fill: #453b14; --crop-ink: #f0de9a; }
+:global(body[data-ds-dark-theme]) .crop[data-tone='legume'] { --crop-fill: #1f3a2c; --crop-ink: #b0dcc1; }
+:global(body[data-ds-dark-theme]) .crop[data-tone='grain'] { --crop-fill: #44321f; --crop-ink: #ecd0ad; }
+
+.tabs { max-width: 380px; margin-bottom: 14px; }
+.pending { margin: 0 0 8px; color: var(--dsw-alias-label-secondary); font-weight: 500; }
+.source { margin: 12px 0 0; font-size: 12px; color: var(--dsw-alias-label-secondary); }
+.rowLine { display: block; color: var(--dsw-alias-label-secondary); font-size: 12px; line-height: 1.5; overflow-wrap: anywhere; }
+.table .group th { padding: 18px 10px 8px; white-space: normal; border-bottom: 1px solid var(--dsw-alias-border-l3); }
+.table tbody:first-of-type .group th { padding-top: 10px; }
+.table tbody + tbody .group th { border-top: 1px solid var(--dsw-alias-border-l3); }
+.groupHead { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 28px; }
+.groupName { font-weight: 500; }
+.groupNote { margin-left: 10px; color: var(--dsw-alias-label-secondary); font-size: 12px; font-weight: 400; }
+@media (max-width: 767px) { .cardHead { flex-direction: column; gap: 8px; } .connection { white-space: normal; } }
+
+.crop[data-proposed] { background: transparent; border: 1px dashed currentColor; padding: 1px 6px; }
+.table [data-divide] { border-left: 1px solid var(--dsw-alias-border-l3); padding-left: 12px; }
+.table thead .spans th, .table thead .spans td { border-bottom: 0; padding-bottom: 0; }
+.table tr[data-open='true'] > * { border-bottom: 0; }
+/* An open plan's details stay within the visible width while a wide table scrolls sideways. */
+.scroll { container-type: inline-size; }
+.table .detail > td { padding: 0 0 20px; white-space: normal; }
+.detail > td > div { position: sticky; left: 0; width: 100cqw; }
+.detail p { margin: 0 0 8px; max-width: 76ch; }
+.detail .source { margin: 8px 0 0; }
+.rowButtons { display: flex; justify-content: flex-end; gap: 8px; white-space: nowrap; }

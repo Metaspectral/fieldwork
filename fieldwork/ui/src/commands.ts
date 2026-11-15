@@ -6,6 +6,10 @@ import { acceptCorn, observeCorn, proposeCorn, saveField } from '../../plugins/p
 import { captureUrl } from '../../plugins/capture.ts'
 import { loadCornDemo } from '../../plugins/corn-demo.ts'
 import { sourceInputSchema } from '../../plugins/sources.ts'
+import { acceptRotation, proposeRotation, saveFieldCrops } from '../../plugins/rotation-planning.ts'
+import { loadRotationDemo } from '../../plugins/rotation-demo.ts'
+import { loadBrookingsExample } from '../../plugins/rotation-brookings.ts'
+import { refreshFarmPicture } from '../../plugins/farm-picture.ts'
 const text = z.string().trim().min(1).max(2000)
 const command = z.discriminatedUnion('action', [
   z.object({ action: z.literal('farm'), farm: farmSchema, confirmed: z.literal(true) }),
@@ -23,10 +27,16 @@ const command = z.discriminatedUnion('action', [
 /** Apply an explicitly submitted UI command and return only its result plus the committed snapshot. */
 export async function perform(records: FarmRecords, input: unknown) {
   const request = z.object({ action: z.string() }).parse(input)
-  if (['field', 'import-source', 'propose-corn', 'accept-corn', 'observe-corn', 'corn-demo', 'capture-source'].includes(request.action)) {
+  if (['field', 'import-source', 'propose-corn', 'accept-corn', 'observe-corn', 'corn-demo', 'capture-source', 'field-crops', 'propose-rotation', 'accept-rotation', 'rotation-demo', 'brookings-example', 'farm-picture'].includes(request.action)) {
     const c = z.object({ action: z.string(), confirmed: z.literal(true), payload: z.unknown() }).parse(input)
     let createdId: string | undefined
     if (c.action === 'corn-demo') createdId = (await loadCornDemo(records)).id
+    else if (c.action === 'rotation-demo') createdId = (await loadRotationDemo(records)).id
+    else if (c.action === 'brookings-example') createdId = (await loadBrookingsExample(records))[0]
+    else if (c.action === 'farm-picture') await refreshFarmPicture(records, AbortSignal.timeout(90000))
+    else if (c.action === 'field-crops') await saveFieldCrops(records, c.payload)
+    else if (c.action === 'propose-rotation') createdId = (await proposeRotation(records, c.payload)).id
+    else if (c.action === 'accept-rotation') await acceptRotation(records, z.object({ id: text }).parse(c.payload).id)
     else if (c.action === 'field') createdId = await saveField(records, c.payload)
     else if (c.action === 'capture-source') {
       const value = sourceInputSchema.omit({ filename: true }).parse(c.payload)
