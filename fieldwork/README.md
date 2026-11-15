@@ -39,3 +39,7 @@ Field learning also supports open historical-yield investigations with true unkn
 Community is a local demonstration feed, not an online social service. Live Sentinel-2 checks are available after explicit field activation; there is no live weather, hosted execution, or phone pairing yet. Browser tests cover the native pages. A real Harness conversation was also tested with `gpt-6.1-sol` through the local [Codex subscription bridge](codex/README.md). This verifies read-and-compare and cited corn-budget scenarios, not general agronomic quality. A cloud model receives the context sent to it.
 
 The abandoned mockup and separate `/fieldwork` app have been removed. The original handoff remains historical context in Git; its interface recommendations do not control the native plugin implementation. Preserve upstream licensing and third-party notices when customizing the harness.
+
+## AI assistance
+
+Parts of the code, tests and documentation in this directory were generated with AI coding assistants, directed by the project team. This includes the rotation library and budget, the NASA checks, the farm map and the field conditions tables, together with their fictional example records. The commits that added them carry a `Co-Authored-By` trailer, and their pull requests say so in the description. The rotation crop orders, the USDA field outlines and the USDA crop types come from their cited sources and are not AI-generated.

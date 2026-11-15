@@ -46,3 +46,5 @@ The farm map on My farm draws every field that has an outline or a point and lab
 Domain tests cover the six cited library entries, rejection of an entry without a source, the budget arithmetic on invented inputs, a missing number, the acceptance checks, the fictional example, the Brookings example, field locations, picture placement and saving, and migration from schema version 2 with its backup. A browser test loads the fictional example, accepts it, adds a field, records a past crop, compares two rotations, reviews and accepts the plan, and checks the table.
 
 These checks validate software mechanics and the stated limits. A rotation decision still requires locally applicable evidence and farmer judgment.
+
+Parts of the code, tests and text of this method were generated with AI coding assistants, directed by the project team; see the [README](../README.md).
