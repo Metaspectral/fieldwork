@@ -1,6 +1,6 @@
 # Field history and onboarding: handoff
 
-Written 14 November 2026, against commit `a7aabb23dc` on `main`. Nothing in `fieldwork/onboarding/` is committed yet.
+Written 14 November 2026. The work is on the branch [`onboarding-field-history`](https://github.com/Metaspectral/fieldwork/tree/onboarding-field-history), which starts from commit `a7aabb23dc` on `main`. It is not merged; [open a pull request here](https://github.com/Metaspectral/fieldwork/pull/new/onboarding-field-history).
 
 ## What this is
 
@@ -15,6 +15,87 @@ It stops there. Suggesting rotations, and the questions about equipment, leases 
 
 **It is a working skeleton, not a finished product.** The rules and the plumbing are real and tested. Much of the data is either invented or not connected. The section "Everything that is fake, assumed or cut short" lists all of it.
 
+## Links
+
+Code and documents in this repository:
+
+- This package: [fieldwork/onboarding](https://github.com/Metaspectral/fieldwork/tree/onboarding-field-history/fieldwork/onboarding)
+- The conversation script: [SKILL.md](skills/farmer-onboarding/SKILL.md)
+- Every threshold: [settings.js](settings.js). The crop table: [crops.js](crops.js). Every invented value: [pretend-data.js](pretend-data.js)
+- Team setup: [SETUP.md](../SETUP.md). Product direction in this repository: [README.md](../README.md), [architecture.md](../docs/architecture.md)
+- The other Fieldwork packages: [plugins](../plugins/README.md), [ui](../ui/README.md)
+- Harness documents used to build this: [first plugin](../../docs/user/develop/basic/index.md), [tools](../../docs/cookbook/adding-a-tool.md), [packaging](../../docs/user/develop/basic/publish.md), [asking the user questions](../../packages/interaction/tool-ask-user/README.md), [skills](../../packages/skill/skill/README.md), [agent presets](../../packages/preset/agent-preset/README.md)
+
+Data sources. The first four are the ones this code calls, and they answered on 14 November 2026:
+
+- [NASA POWER](https://power.larc.nasa.gov/docs/services/api/): daily weather. No account
+- [USDA Cropland Data Layer (CropScape)](https://nassgeodata.gmu.edu/CropScape/): crop each year. No account
+- [USDA Soil Data Access](https://sdmdataaccess.sc.egov.usda.gov/): soil survey. No account
+- [US Census geocoder](https://geocoding.geo.census.gov/geocoder/): county and state. No account
+- [NASA Earthdata login](https://urs.earthdata.nasa.gov/): needed for [Harmonized Landsat and Sentinel-2](https://hls.gsfc.nasa.gov/) images and [GRACE](https://grace.jpl.nasa.gov/) stored water
+- [OpenET](https://etdata.org/): water used by crops. Needs an account key
+- [USDA Quick Stats](https://quickstats.nass.usda.gov/api): price records. Needs a free key
+
+Design work. These sit in Jon's Claude account and open only for him; ask him for an export:
+
+- [Mockup of every screen](https://claude.ai/artifact/8PhXqVzPocUnzKm4kxY6Gk)
+- [The experience, stage by stage](https://claude.ai/artifact/DcfaqJo6uDZqsVuCi8F6q1)
+
+## What it looks like
+
+**There are no screens for this plugin.** It runs inside the harness's chat window. The only screenshot that can be taken without a model is this one: the harness finds the skill and offers it as a command.
+
+![The harness chat box with "/farmer" typed and the farmer-onboarding skill offered above it](screenshots/skill-command.png)
+
+What the agent would say cannot be shown yet, because no model is set up. Below is what the tools hand to the agent, copied from the run against live services for the Finney County point. The agent turns this into plain sentences for the farmer.
+
+`field_history`, crops only (first visit, about 12 seconds):
+
+```text
+Field field_38.0575_-100.9512. Crops only so far; call again with part "all" for the problems.
+2016 wheat
+2017 corn
+2018 wheat
+2019 corn
+2020 corn
+2021 wheat
+2022 corn
+2023 wheat
+2024 alfalfa
+2025 alfalfa
+Current rotation: no repeating pattern found.
+```
+
+`year_detail` for 2022:
+
+```text
+2022, corn:
+- drought and heat: bad (true for your region)
+    season rain: 9.7 inches; 30-year average: 13.3 inches
+    hot days: 62 days at or above 95°F; the top fifth of 30 years starts at: 59 days
+    crop greenness at its peak: no reading
+- water: no reading
+- topsoil: fine (estimated for your field). Counts soil moved by rain only, not by wind.
+    soil lost: 0.4 tons an acre; this soil can lose: 5 tons an acre
+- salt: fine (true for your region). One reading for the whole period, from the soil record.
+    salt in the soil: 1 deciSiemens per metre; watch from: 2 deciSiemens per metre
+- costs: no reading
+```
+
+`field_risks`:
+
+```text
+Top risk: drought and heat. Bad in 2 of 5 years (2021–2025), against 0 of 5 years (2016–2020) before.
+All risks, highest first (region-only ones last):
+1. topsoil: low (estimated for your field); bad never; watch never
+2. drought and heat: medium (true for your region); bad 2022, 2024; watch 2018, 2020
+3. salt: low (true for your region); bad never; watch never
+Current rotation: no repeating pattern found.
+No reading for: crop greenness (...); water the crop used (...); the region's stored water (...); fertilizer prices (...).
+```
+
+For the look the rest of Fieldwork has, see the screenshots of the other pages: [My farm](../screenshots/farm.png), [Seed costs](../screenshots/seed-costs.png), [Experiments](../screenshots/experiments.png), [Community](../screenshots/community.png), [on a phone](../screenshots/mobile.png). None of them shows the field history.
+
 ## What has been checked, and what has not
 
 Checked:
@@ -22,10 +103,11 @@ Checked:
 - 46 tests pass (`test/rules.test.js`, `test/tools.test.js`). They use stand-in data sources and never touch the network.
 - One manual run against the live services, for a cropland point in Finney County, Kansas (38.0575, -100.9512) with an invented size of 126 acres. Crops, drought and heat, topsoil and salt came back. A first visit took about 12 seconds; a second took about 10 milliseconds.
 - The harness starts with the plugin loaded and prints `[fieldwork-onboarding] loaded: 6 tools and the farmer-onboarding skill (pretend data)`.
+- The harness finds the skill: typing `/farmer` in the chat box offers `farmer-onboarding` (see the screenshot above).
 
 Not checked:
 
-- **No model has ever called these tools.** Nobody has set up a model, so the agent has never run the conversation. Whether `/farmer-onboarding` finds the skill is unknown.
+- **No model has ever called these tools.** Nobody has set up a model, so the agent has never run the conversation.
 - Installing the package with `dsh plugin add`. Only loading it from this checkout has been tried.
 - Anything after the pull of `a7aabb23dc`. The harness was not rebuilt, so it is unknown whether this plugin and the new `fieldwork/plugins` and `fieldwork/ui` packages load together.
 - Any field outside Kansas. Any field in Alaska or Hawaii.
@@ -52,14 +134,14 @@ To use real data, set `FIELDWORK_PRETEND=0` before starting, or add `config: { p
 
 | File | What it holds |
 |---|---|
-| `index.js` | The plugin: the six tools, their output shapes, the text the model reads, saved answers |
-| `history.js` | The rules: levels for each problem, rotation, ranking. No network code |
-| `sources.js` | Fetching from outside services, and the four sources that are not connected |
-| `settings.js` | Every threshold |
-| `crops.js` | The hand-entered crop table |
-| `pretend-data.js` | Every invented value |
-| `skills/farmer-onboarding/SKILL.md` | The conversation order and wording rules |
-| `cordis.patch.yml`, `dev.patch.yml` | How the harness loads the plugin (installed, and from this checkout) |
+| [`index.js`](index.js) | The plugin: the six tools, their output shapes, the text the model reads, saved answers |
+| [`history.js`](history.js) | The rules: levels for each problem, rotation, ranking. No network code |
+| [`sources.js`](sources.js) | Fetching from outside services, and the four sources that are not connected |
+| [`settings.js`](settings.js) | Every threshold |
+| [`crops.js`](crops.js) | The hand-entered crop table |
+| [`pretend-data.js`](pretend-data.js) | Every invented value |
+| [`skills/farmer-onboarding/SKILL.md`](skills/farmer-onboarding/SKILL.md) | The conversation order and wording rules |
+| [`cordis.patch.yml`](cordis.patch.yml), [`dev.patch.yml`](dev.patch.yml) | How the harness loads the plugin (installed, and from this checkout) |
 
 The tools: `find_field`, `field_history`, `year_detail`, `field_risks`, `correct_year`, `save_field_note`.
 
@@ -163,7 +245,7 @@ All thresholds are in `settings.js` and are the spec's starting values. None has
 ### 8. The agent and the conversation
 
 - **No agent preset.** The tools are added for every agent, and the standard agent can also run commands and edit files. The handoff asked for a farmer agent with only these tools, the question tool and a plain-spoken persona. Not built.
-- The skill is registered by the plugin when it loads rather than placed in `.dsh/skills/`, because that folder is ignored by git. Untested with a real agent.
+- The skill is registered by the plugin when it loads rather than placed in `.dsh/skills/`, because that folder is ignored by git. The harness lists it as a command, but no agent has run it.
 - "Crops first, then problems" depends on the agent calling `field_history` twice, as the skill tells it to. Nothing enforces it.
 - The wording rules (no predictions, no satellites, plain words) are instructions in `SKILL.md`. Nothing checks that the model follows them.
 - English only. The rest of the repository keeps Chinese translations of its documents.
