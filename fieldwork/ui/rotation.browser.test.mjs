@@ -1,4 +1,4 @@
-/** Native end-to-end: load the fictional rotation example, accept it, then compare rotations on an own field. */
+/** Native end-to-end: load the fictional rotation example, accept it, then compare rotations on an own field, load the Brookings example and see it on the farm map. */
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { fork } from 'node:child_process'
@@ -100,7 +100,28 @@ test('rotation table, compare dialog and plan acceptance complete a native farme
     assert.match(await river.innerText(), /100\s+—\s+—\s+Corn\s+Soybean\s+Corn–soybean/)
     await page.setViewportSize({ width: 1440, height: 2300 })
     await shot('7-own-field-accepted.png')
+    await page.getByRole('button', { name: 'Load the Brookings example', exact: true }).click()
+    await page.getByText(/Nobody has confirmed them as their fields/).waitFor()
+    assert.equal((await snapshot()).state.fields.length, 4, 'review does not load the example')
+    await confirm()
+    await page.getByRole('row', { name: /West strip · Brookings example/ }).getByText('Soybean', { exact: true }).first().waitFor()
+    assert.equal(await page.getByRole('button', { name: 'Load the Brookings example', exact: true }).count(), 0, 'the example loads once')
+    state = (await snapshot()).state
+    assert.deepEqual(state.fields.slice(4).map(f => f.geometry.type), ['Polygon', 'Polygon', 'Polygon', 'Point'])
+    await shot('8-brookings-example.png')
     await page.getByRole('button', { name: 'My farm', exact: true }).click()
+    const map = page.getByRole('img', { name: /Map of the located fields/ })
+    await map.getByText('West strip', { exact: true }).waitFor()
+    await map.getByText('2025 · Soybean', { exact: true }).waitFor()
+    await map.getByText('2025 · USDA class: Grass or pasture', { exact: true }).waitFor()
+    await map.getByText('Study site', { exact: true }).waitFor()
+    assert.equal(await map.locator('polygon').count(), 3)
+    await page.getByText('No satellite picture yet. Outlines are drawn on a plain background.', { exact: true }).waitFor()
+    await page.getByRole('button', { name: 'Get satellite picture', exact: true }).click()
+    await page.getByText(/Nothing is uploaded and your records stay unchanged/).waitFor()
+    await page.getByRole('button', { name: 'Cancel', exact: true }).click()
+    await map.scrollIntoViewIfNeeded()
+    await shot('9-farm-map.png')
     await page.getByRole('button', { name: 'Open rotation', exact: true }).click()
     await page.getByRole('heading', { level: 1, name: 'Rotation', exact: true }).waitFor()
     assert.deepEqual(errors, [])

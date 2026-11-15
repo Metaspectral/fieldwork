@@ -6,6 +6,7 @@ import type {} from '@deepseek-ai/dsh-client-ui-sidebar/client'
 import type { FarmState } from '../../../plugins/records.ts'
 import type { Face, Reply } from './controller.ts'
 import { FieldSeasonContext } from './context.tsx'
+import { FarmMap } from './farm-map.tsx'
 import { FieldContext } from './fields.tsx'
 import { NasaChecksCard } from './nasa-checks.tsx'
 import css from './page.module.css'
@@ -47,6 +48,7 @@ export function Page(props: Props): ReactNode {
     {(completed || state.saved) && <p role="status" className={css.notice}>{t('saved')}</p>}
     {props.section === 'farm' && f && <>
       <FieldContext fields={state.data.fields} t={t} action={<Button onClick={() => props.navigate('corn')}>{t('addField')}</Button>} />
+      <FarmMap fields={state.data.fields} picture={state.picture} busy={state.busy} t={t} getPicture={() => ask({ action: 'farm-picture', payload: {} }, t('getFarmPicture'), [[t('getFarmPicture'), t('farmPictureScope')]])} loadExample={() => ask({ action: 'brookings-example', payload: {} }, t('loadBrookingsExample'), [[t('loadBrookingsExample'), t('brookingsExampleScope')]])} />
       <NasaChecksCard fields={state.data.fields} t={t} />
       <section className={css.card}><h2>{f.name}</h2><p>{f.region} · {f.areaHa} ha · {f.crop}</p><h3>{t('baseline')}</h3><p>{f.approach}</p><h3>{t('reason')}</h3><p>{f.reason}</p><Button onClick={() => props.navigate('learning')}>{t('newInvestigation')}</Button></section>
       <section className={css.card}><h2>{t('rotation')}</h2><p>{t('rotationFarmLine')}</p><Button onClick={() => props.navigate('rotation')}>{t('openRotation')}</Button></section>

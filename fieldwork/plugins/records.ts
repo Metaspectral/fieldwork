@@ -63,6 +63,8 @@ export class FarmRecords {
       return new FarmRecords(file, stateSchema.parse(raw))
     } catch (error) { throw new FarmError('Could not open farm records; the existing file has been preserved.', 'FARM_STORAGE', error) }
   }
+  /** Folder that holds the records file and its side files, such as retained originals and the farm picture. */
+  get directory(): string { return dirname(this.file) }
   /** Subscribe to successful commits; disposal removes the listener. */
   subscribe(listener: () => void): () => void { this.listeners.add(listener); return () => { this.listeners.delete(listener) } }
   /** Return detached private records; callers choose which fields to disclose. */

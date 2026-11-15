@@ -5,7 +5,7 @@
   "type": "module",
   "description": "Native DeepSeek Harness plugins for farmer-owned context and empirical crop experiments.",
   "scripts": {
-    "test": "node --import tsx/esm --test records.test.ts onboarding-progress.test.ts research.test.ts learning.test.ts rotation.test.ts rotation-signals.test.ts",
+    "test": "node --import tsx/esm --test records.test.ts onboarding-progress.test.ts research.test.ts learning.test.ts rotation.test.ts rotation-signals.test.ts farm-picture.test.ts",
     "typecheck": "tsc -p tsconfig.json"
   },
   "dependencies": {

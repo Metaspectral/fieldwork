@@ -66,3 +66,11 @@
 .sheet input { width: 96px; }
 .sheet th, .sheet td { padding: 6px 12px 6px 0; font-weight: 400; }
 .srOnly { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.farmMap { display: block; width: 100%; height: auto; border-radius: 8px; }
+.farmMapCanvas { fill: #3d4a3a; }
+.farmMapOutline { fill: rgb(255 255 255 / 8%); stroke: #fff; stroke-width: 2.5; stroke-linejoin: round; paint-order: stroke; filter: drop-shadow(0 0 1px #000); }
+.farmMapPoint { fill: #fff; stroke: #1c1c1c; stroke-width: 2; }
+.farmMapName, .farmMapCrop { fill: #fff; stroke: rgb(0 0 0 / 75%); stroke-width: 3.5; paint-order: stroke; font-size: 15px; }
+.farmMapName { font-weight: 600; }
+.farmMapCrop { font-size: 13px; }
+.farmMapCaption { margin: 10px 0 0; font-size: 13px; color: var(--dsw-alias-label-secondary); }

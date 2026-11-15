@@ -180,7 +180,7 @@ export function RotationPage(props: Props): ReactNode {
           </tr>
         })}</tbody>
       </table></div> : <p>{t('rotationEmpty')}</p>}
-      {data.rotationPlans.length === 0 && <div className={css.actions}><Button variant="outline" disabled={state.busy} onClick={() => request('rotation-demo', {}, [t('rotationDemoScope')])}>{t('loadRotationDemo')}</Button></div>}
+      <div className={css.actions}>{!data.fields.some(f => f.geometry?.example !== undefined) && <Button variant="outline" disabled={state.busy} onClick={() => request('brookings-example', {}, [t('brookingsExampleScope')])}>{t('loadBrookingsExample')}</Button>}{data.rotationPlans.length === 0 && <Button variant="outline" disabled={state.busy} onClick={() => request('rotation-demo', {}, [t('rotationDemoScope')])}>{t('loadRotationDemo')}</Button>}</div>
     </article>
     <section><h2>{t('rotationPlans')}</h2>
     {plans.length ? plans.map(p => {
