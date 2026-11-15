@@ -23,13 +23,14 @@ function load(): void {
   loading = true
   fetch(new URL(ROUTE, document.baseURI)).then(async r => update({ status: r.ok ? await r.json() as NasaStatus : 'absent' })).catch(() => update({ status: 'absent' }))
 }
-async function run(body: { fieldId: string } | { demo: true }, key: string): Promise<void> {
+async function run(body: { fieldId: string } | { demo: true }, key: string, show = true): Promise<void> {
   update({ running: key, error: null, errorFor: key })
   try {
     const r = await fetch(new URL(ROUTE, document.baseURI), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
-    const reply = await r.json() as NasaStatus & { check?: NasaCheck; error?: string }
-    if (!r.ok || !reply.check) { update({ error: reply.error ?? null }); return }
-    update({ status: { connected: reply.connected, checks: reply.checks }, open: reply.check })
+    // A refused request, such as one from a page opened before the server restarted, has no JSON body; the empty text tells the card to show its own message.
+    const reply = await r.json().catch(() => ({})) as Partial<NasaStatus> & { check?: NasaCheck; error?: string }
+    if (!r.ok || !reply.check || !reply.checks) { update({ error: reply.error ?? '' }); return }
+    update({ status: { connected: reply.connected === true, checks: reply.checks }, ...(show ? { open: reply.check } : {}) })
   } catch (error) { update({ error: error instanceof Error ? error.message : null }) }
   finally { update({ running: null }) }
 }
@@ -38,7 +39,7 @@ async function run(body: { fieldId: string } | { demo: true }, key: string): Pro
 export const NASA_TEST_OUTLINE = 'nasa-test-brookings'
 /**
  * Shared request state for the page: status, a running field, the open check, and errors.
- * @returns The shared state with `setOpen` and `run`; `status` is null while loading and `'absent'` when the plugin is not installed.
+ * @returns The shared state with `setOpen` and `run`; `status` is null while loading and `'absent'` when the plugin is not installed. `run` opens the finished check's dialog unless its third argument is false. `error` is an empty text when a check failed without a message from the server.
  */
 export function useNasaChecks() {
   const s = useSyncExternalStore(l => { listeners.add(l); return () => listeners.delete(l) }, () => shared)

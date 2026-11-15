@@ -26,6 +26,6 @@ export function FarmOverview({ fields, selectedId, picture, busy, t, select, ope
   return <>
     <FarmMap fields={fields} selectedId={selectedId} picture={picture} busy={busy} t={t} getPicture={getPicture} loadExample={loadExample} />
     <FieldsTable fields={fields} selectedId={selectedId} t={t} condition={condition} actions={<>{filtered && <Button variant="outline" onClick={() => select(null)}>{t('showAllFields')}</Button>}<Button variant="outline" onClick={openRotation}>{t('openRotation')}</Button><Button variant="outline" onClick={addField}>{t('addField')}</Button></>} />
-    <FieldConditions fields={fields} selectedId={selectedId} select={select} t={t} />
+    <FieldConditions fields={fields} selectedId={selectedId} t={t} />
   </>
 }
