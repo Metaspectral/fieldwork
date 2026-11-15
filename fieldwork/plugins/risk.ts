@@ -108,7 +108,8 @@ export function riskCheck(input: RiskInput, model: RiskModel): RiskResult {
   const blockers = [...new Set(proposed.filter(c => !current.includes(c)).flatMap(c => model.crops[c]!.blockers))]
   const label = model.cropsAreExamples ? ' (example numbers)' : ''
   const change = `${proposed.join('-')} instead of ${current.join('-')}`
-  const usd = (n: number) => `$${Math.abs(Math.round(n))}/acre`
+  // Spelled out: a pair of "$" in chat Markdown renders as math.
+  const usd = (n: number) => `${Math.abs(Math.round(n))} USD/acre`
   const often = dryYears !== undefined ? ` Dry years came ${dryYears} of the last ${ofYears} on this field.` : ''
   return {
     summary: `On ${field} (${acres} acres), ${change}: ${dryDelta >= 0 ? 'better' : 'worse'} in a dry year by about ${usd(dryDelta)}, and ${normalDelta >= 0 ? 'gains' : 'gives up'} about ${usd(normalDelta)} in a normal year${label}.${often} ${blockers.length} blocker(s) to solve first.`,
