@@ -3,8 +3,8 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write fieldwork/README.md
 /fieldwork:
-  en: 2fc88ad19e340ed5
-  zh: c24ab4521113ebb5
+  en: 620cb7d28d9a6704
+  zh: 7b900f33c93ed6e8
 /fieldwork/native-plugins:
   en: 5dbcda2e526dffbb
   zh: 24247e1ea64e0ef8

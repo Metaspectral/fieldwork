@@ -6,6 +6,8 @@ Actual captures of the native DeepSeek Harness plugins with the Fieldwork starte
 
 Captured on 2026-11-14 using the isolated browser workflow in `fieldwork/ui/browser.test.mjs`. Desktop captures use 1440 × 1000; the phone view uses 390 × 844. The test consumes no model subscription.
 
+See also [Jon’s field-history plugin preview](jon-onboarding/README.md), captured from his unmerged branch using invented corn/soybean data.
+
 ## My farm
 
 Capture current practices and the reasons behind them.

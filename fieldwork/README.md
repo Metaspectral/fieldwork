@@ -4,6 +4,8 @@ English | [中文](README.zh.md)
 
 A farmer-owned workspace built as native DeepSeek Harness plugins. Start with the farmer's current approach and reasoning, compare a manageable change, and retain what was learned.
 
+Corn is the first crop workflow. The underlying farm context, evidence, plans, and experiments should support other farm types. Longer-term scope includes assigning work to human helpers with explicit responsibilities and permissions; helper delegation is not implemented yet.
+
 ## Native plugins
 
 The application is the Harness itself: its chat, tool cards, approvals, sessions, and preset settings. My farm, Community, and Experiments are native main panels registered by the [UI plugin](ui/README.md), alongside the existing chat and navigation.
